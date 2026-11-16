@@ -377,7 +377,9 @@ body[data-dark] .nav__hint { background: var(--background-static-white-faded); c
   opacity: 0; transform: translateY(-6px) scale(0.96); transform-origin: top left;
   transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2), background 0.4s, color 0.4s;
 }
-.nav__id:hover .nav__hint, .nav__id:focus-within .nav__hint { opacity: 1; transform: none; }
+/* hover only: a mouse click on the name leaves it focused, so plain :focus-within kept the tooltip stuck open; keyboard focus (:focus-visible) still shows it */
+@media (hover: hover) { .nav__id:hover .nav__hint { opacity: 1; transform: none; } }
+.nav__id:has(:focus-visible) .nav__hint { opacity: 1; transform: none; }
 
 /* ---- home hero: truly centred, and never taller than the screen ---- */
 .board { width: min(100%, 980px, calc((100vh - 150px) * 1.4797)); }
@@ -1504,9 +1506,6 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 .about .chips em { padding: 7px 13px; border-radius: 999px; background: var(--background-surface-subtle); }
 
 
-/* the tile above a project title: "How might we… time", which opens into the whole question */
-.wk__pill-lead { opacity: 0.7; margin-right: 0.3em; }
-
 /* on a phone the home page starts with the intro card, not the experience card */
 @media (max-width: 899px) {
   .board > .note--hero { order: -1; }
@@ -1610,3 +1609,8 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 
 /* a little scrap of paper flying off the tear */
 .billgen__scrap { position: absolute; top: 4px; z-index: 2; width: 7px; height: 4px; border-radius: 1px; background: #f4f2ec; box-shadow: 0 1px 2px rgba(22, 24, 29, 0.25); pointer-events: none; opacity: 0; }
+
+/* the text in the tile above a project title fades in when it swaps between the keyword and the whole question */
+@keyframes pilltext { from { opacity: 0; } to { opacity: 1; } }
+.wk__pill-text { animation: pilltext 0.22s 0.1s backwards; }
+@media (prefers-reduced-motion: reduce) { .wk__pill-text { animation: none; } }

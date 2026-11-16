@@ -24,20 +24,10 @@ function Bubble({ text, open }) {
         style={{ borderTopLeftRadius: 6, borderTopRightRadius: 6, borderBottomRightRadius: 6, borderBottomLeftRadius: 0 }}
         transition={{ layout: { duration: 0.32, ease: [0.2, 0.8, 0.2, 1] } }}
       >
-        <motion.span
-          key={open ? 'full' : 'short'}
-          className="wk__pill-text"
-          initial={reduce ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.22, delay: 0.1 }}
-        >
-          {open ? rich(text) : (
-            <>
-              <span className="wk__pill-lead">How might we…</span>
-              <b>{keywordOf(text)}</b>
-            </>
-          )}
-        </motion.span>
+        {/* a new key replays the CSS fade (.wk__pill-text in styles.css) whenever the text swaps between the keyword and the question */}
+        <span key={open ? 'full' : 'short'} className="wk__pill-text">
+          {open ? rich(text) : <b>{keywordOf(text)}</b>}
+        </span>
       </motion.span>
     </div>
   )
