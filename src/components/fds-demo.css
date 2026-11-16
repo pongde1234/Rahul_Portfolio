@@ -1,0 +1,78 @@
+/* Layout for the FDS demo (FdsDemo.jsx). Tokens from @faclon-labs/fds only: no hex, no px outside the spacing scale,
+   no new custom properties (guardrails G11, G17). Everything that looks like a component is an FDS component. */
+
+.fdsd {
+  display: grid;
+  gap: var(--spacing-16);
+  padding: var(--spacing-16);
+  background: var(--background-surface-moderate);
+  color: var(--text-neutral-normal);
+  font-family: var(--font-family);
+  text-align: left;
+}
+
+.fdsd__panes {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--spacing-16);
+  align-items: stretch;
+}
+
+/* the AI's JSON and the screen FDS draws from it are two panes, each its own surface */
+.fdsd__pane {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--spacing-12);
+  min-width: 0;
+  padding: var(--spacing-16);
+  background: var(--background-surface-intense);
+  border: var(--border-width-thin) solid var(--border-neutral-default);
+  border-radius: var(--radius-l);
+}
+
+.fdsd__label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  color: var(--text-neutral-subtle);
+}
+
+.fdsd__code {
+  margin: 0;
+  max-height: calc(var(--spacing-64) * 6);
+  overflow: auto;
+  color: var(--text-neutral-subtle);
+  white-space: pre;
+}
+
+.fdsd__screen {
+  display: grid;
+  gap: var(--spacing-12);
+  align-content: start;
+  min-width: 0;
+}
+
+.fdsd__title {
+  margin: 0;
+  color: var(--text-neutral-normal);
+}
+
+.fdsd__grid {
+  display: grid;
+  gap: var(--spacing-12);
+}
+
+.fdsd__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+@media (max-width: 768px) {
+  .fdsd__panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fdsd__grid {
+    grid-template-columns: minmax(0, 1fr) !important; /* the node's own column count is inline; stack on a phone */
+  }
+}

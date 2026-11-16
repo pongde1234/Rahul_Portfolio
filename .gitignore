@@ -1,0 +1,9 @@
+node_modules
+dist
+.DS_Store
+*.log
+.env
+.env.*
+
+# full-size originals of the real design screenshots (under NDA): only the few compressed ones in public/images are shipped
+assets-original/

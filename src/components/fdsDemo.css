@@ -1,0 +1,82 @@
+/* Layout for the FDS demo (FdsDemo.jsx). Only FDS tokens: spacing from the scale, radius, border width and the
+   neutral surface / text / border roles. No hex, no px literals, and no new custom properties. */
+
+.fdsd {
+  display: grid;
+  gap: var(--spacing-16);
+  padding: var(--spacing-24);
+  background: var(--background-surface-subtle);
+  color: var(--text-neutral-normal);
+  text-align: left;
+}
+
+/* the AI writes first, the design system draws below it: stacked, so the drawn screen gets the full width */
+.fdsd__panes {
+  display: grid;
+  gap: var(--spacing-24);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 760px) {
+  .fdsd { padding: var(--spacing-16); }
+}
+
+.fdsd__pane {
+  display: grid;
+  gap: var(--spacing-12);
+  min-width: 0;
+}
+
+.fdsd__label {
+  color: var(--text-neutral-subtle);
+}
+
+/* the JSON the AI writes */
+.fdsd__code {
+  margin: 0;
+  padding: var(--spacing-16);
+  max-height: calc(var(--spacing-64) * 3);
+  overflow: auto;
+  background: var(--background-surface-intense);
+  border: var(--border-width-thin) solid var(--border-neutral-default);
+  border-radius: var(--radius-l);
+  color: var(--text-neutral-subtle);
+  white-space: pre;
+}
+
+/* the screen FDS draws from it */
+.fdsd__screen {
+  display: grid;
+  gap: var(--spacing-12);
+  align-content: start;
+  min-width: 0;
+  min-height: calc(var(--spacing-64) * 5);
+  padding: var(--spacing-16);
+  background: var(--background-surface-intense);
+  border: var(--border-width-thin) solid var(--border-neutral-default);
+  border-radius: var(--radius-l);
+}
+
+.fdsd__grid {
+  display: grid;
+  gap: var(--spacing-12);
+  min-width: 0;
+}
+
+.fdsd__heading,
+.fdsd__text {
+  margin: 0;
+  color: var(--text-neutral-normal);
+}
+
+.fdsd__text { color: var(--text-neutral-subtle); }
+
+/* the button a generated answer offers: it only asks, so it sits left and quiet */
+.fdsd__action { justify-self: start; }
+
+/* what a pane says before there is anything to show */
+.fdsd__empty {
+  margin: 0;
+  color: var(--text-neutral-muted);
+}
+
