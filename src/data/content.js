@@ -19,6 +19,8 @@ export const profile = {
   tags: ['SaaS', 'IoT', 'Enterprise'],
   // Split-flap board: 2 rows max 15 characters each, use "|" to break the line.
   flapPhrases: ['DESIGNING|CLEAR PRODUCTS', 'SIMPLIFYING|COMPLEX FLOWS', 'TESTING WITH|REAL USERS', 'FROM RESEARCH|TO HANDOFF'],
+  // What the board spells in the opening intro (the card sits in the middle of the screen before the site opens), then the phrases above follow.
+  flapIntro: 'RAHUL|DESIGNER',
   photo: '', // e.g. '/me.jpg' (put the file in /public). Empty = "Photo coming soon" placeholder
   photoCaption: 'Rahul',
   email: 'pongderahul@gmail.com',
@@ -37,9 +39,9 @@ export const education = [
 
 export const strengths = [
   'UX design',
-  'UI design',
-  'Prototyping & wireframing',
-  'Branding & visual identity',
+  'Design systems',
+  'Data-heavy dashboards',
+  'Design to code',
 ]
 
 export const hobbies = ['cactus', 'sun', 'rocket', 'headphones', 'camera']

@@ -14,7 +14,8 @@ const layout = (phrase) =>
     .padEnd(COLS * ROWS, ' ')
     .split('')
 
-export default function SplitFlap({ phrases }) {
+// `lead`: a phrase to spell first (the opening intro's name), before the cycle through `phrases` starts.
+export default function SplitFlap({ phrases, lead }) {
   const [cells, setCells] = useState(() => layout(phrases[0]).map(() => ' '))
   const cur = useRef(layout(phrases[0]).map(() => ' '))
 
@@ -33,7 +34,7 @@ export default function SplitFlap({ phrases }) {
     }
 
     const run = () => {
-      const target = layout(phrases[idx % phrases.length])
+      const target = layout(lead && idx === 0 ? lead : phrases[(idx - (lead ? 1 : 0)) % phrases.length])
       target.forEach((ch, i) => {
         if (reduce) return set(i, ch)
         if (cur.current[i] === ch) return
@@ -47,9 +48,10 @@ export default function SplitFlap({ phrases }) {
       idx++
       timers.push(setTimeout(run, 4500))
     }
-    run()
+    if (lead) timers.push(setTimeout(run, 500)) // the intro card is still fading in: let it show before the letters start
+    else run()
     return () => timers.forEach(clearTimeout)
-  }, [phrases])
+  }, [phrases, lead])
 
   return (
     <div className="flap" role="img" aria-label={phrases.map((p) => p.replace('|', ' ')).join(', ')}>

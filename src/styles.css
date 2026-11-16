@@ -553,11 +553,15 @@ body {
 
 /* notes: neutral paper tones with a hairline edge */
 .note { border: 1px solid var(--border-neutral-default); }
-.note--paper { background: var(--card); }
-.note--stone { background: var(--stone); }
-.note--sand { background: var(--sand); }
+/* the home cards each get a different design-system pastel */
+.note--paper { background: var(--butter); }
+.note--stone { background: var(--sky); }
+.note--sand { background: var(--lilac); }
+.polaroid { background: var(--blush); }
+.flapcard { background: var(--mint); }
+.board .chips em { background: rgba(255, 255, 255, 0.62); }
+.polaroid__img { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0 12px, rgba(255, 255, 255, 0.32) 12px 24px); }
 .chips em { background: var(--background-neutral-faded); }
-.polaroid__img { background: repeating-linear-gradient(135deg, var(--background-surface-subtle) 0 12px, var(--border-neutral-default) 12px 24px); }
 
 /* primary actions */
 .cta { background: var(--ink); color: var(--text-static-white-normal); border-color: var(--ink); }
@@ -579,12 +583,10 @@ body[data-dark] .nav__hint { background: var(--background-static-white-default);
 /* dark contact slide */
 .section--ink .eyebrow, .contact__body .eyebrow { color: var(--text-neutral-muted); }
 
-/* notes: all clean white paper (the grey/beige tints looked muddy) */
+/* notes: the colours of the home cards are set in the "home cards each get a different pastel" block above */
 :root { --card: var(--background-surface-intense); --stone: var(--background-surface-intense); --sand: var(--background-surface-intense); }
-.note, .polaroid, .flapcard, .wcard { background: var(--background-surface-intense); }
 .note { border: 1px solid var(--border-neutral-default); }
 .chips em { background: var(--background-surface-subtle); }
-.polaroid__img { background: repeating-linear-gradient(135deg, var(--background-surface-subtle) 0 12px, var(--border-neutral-default) 12px 24px); }
 .flap__cell { background: linear-gradient(#fff 0 50%, #f3f2ef 50% 100%); }
 
 /* ================= Works page (two-column, big project rows) ================= */
@@ -1614,3 +1616,9 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 @keyframes pilltext { from { opacity: 0; } to { opacity: 1; } }
 .wk__pill-text { animation: pilltext 0.22s 0.1s backwards; }
 @media (prefers-reduced-motion: reduce) { .wk__pill-text { animation: none; } }
+
+/* the opening intro on the home page: the name card is alone in the middle of the screen first (Home.jsx, intro) */
+.nav, .rulers { transition: opacity 0.8s ease; }
+body.intro-on .nav, body.intro-on .rulers { opacity: 0; pointer-events: none; }
+.flapcard__title { transition: opacity 0.6s ease; }
+.flapcard__title--wait { opacity: 0; }

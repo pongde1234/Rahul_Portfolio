@@ -216,7 +216,48 @@ function PagerDots({ section, goTo }) {
 export default function Home() {
   const heroRef = useRef(null)
   const paged = useMedia('(min-width: 1000px)')
-  const [section, goTo] = usePager(paged)
+
+  // The opening intro (desktop, once per visit): the name card sits alone in the middle of the screen while its letters flip and spell the
+  // name; then the title fades in, the rest of the site opens, and the card travels to its place on the board.
+  //   'center' -> 'title' -> 'open' -> 'done'. A click or key press skips ahead.
+  const [intro, setIntro] = useState(() => {
+    try {
+      if (sessionStorage.getItem('intro-seen')) return 'done'
+    } catch {
+      /* storage unavailable */
+    }
+    const is = (q) => window.matchMedia(q).matches
+    return is('(prefers-reduced-motion: reduce)') || !is('(min-width: 1000px)') ? 'done' : 'center'
+  })
+  const [playIntro] = useState(intro !== 'done')
+  const ready = intro === 'open' || intro === 'done' // the rest of the site is showing
+  useEffect(() => {
+    if (intro === 'done') {
+      try {
+        sessionStorage.setItem('intro-seen', '1')
+      } catch {
+        /* storage unavailable */
+      }
+      return undefined
+    }
+    const next = { center: ['title', 1900], title: ['open', 1300], open: ['done', 1500] }[intro]
+    const t = setTimeout(() => setIntro(next[0]), next[1])
+    const skip = () => setIntro((p) => (p === 'center' || p === 'title' ? 'open' : 'done'))
+    window.addEventListener('pointerdown', skip)
+    window.addEventListener('keydown', skip)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('pointerdown', skip)
+      window.removeEventListener('keydown', skip)
+    }
+  }, [intro])
+  // while the card is alone on the screen, the nav and the rulers wait (styles.css, body.intro-on)
+  useEffect(() => {
+    document.body.classList.toggle('intro-on', intro === 'center' || intro === 'title')
+    return () => document.body.classList.remove('intro-on')
+  }, [intro])
+
+  const [section, goTo] = usePager(paged && intro === 'done')
   // tell the nav which slide is showing (it highlights "Works" while the work slide is up)
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('portfolio:slide', { detail: paged ? section : 0 }))
@@ -275,6 +316,17 @@ export default function Home() {
   const hero = (
     <section id="hello" className={`hero ${paged ? 'slide slide--hero' : ''}`} ref={heroRef} aria-hidden={paged && section !== 0}>
       <div className="board">
+        {/* split-flap board */}
+        <Item l="67%" t="2.4%" w="32.7%" r={1.1} boardRef={heroRef} away={away} className="flapcard" delay={0.15} center={intro === 'center' || intro === 'title'}>
+          <p className={`flapcard__title${intro === 'center' ? ' flapcard__title--wait' : ''}`}>
+            {profile.name} — {profile.role}
+          </p>
+          <SplitFlap phrases={profile.flapPhrases} lead={playIntro ? profile.flapIntro : undefined} />
+        </Item>
+
+
+        {ready && (
+          <>
         {/* experience & education */}
         <Item l="0%" t="25.7%" w="26.5%" r={-1} boardRef={heroRef} away={away} className="note note--stone" delay={0.1}>
           <p className="note__label">Experience & education</p>
@@ -312,14 +364,6 @@ export default function Home() {
           <p className="polaroid__cap mono">{profile.photoCaption}</p>
         </Item>
 
-        {/* split-flap board */}
-        <Item l="67%" t="2.4%" w="32.7%" r={1.1} boardRef={heroRef} away={away} className="flapcard" delay={0.15}>
-          <p className="flapcard__title">
-            {profile.name} — {profile.role}
-          </p>
-          <SplitFlap phrases={profile.flapPhrases} />
-        </Item>
-
         {/* strengths */}
         <Item l="72.5%" t="39%" w="25%" r={1} boardRef={heroRef} away={away} className="note note--sand" delay={0.3}>
           <p className="note__label">What I'm good at</p>
@@ -349,11 +393,15 @@ export default function Home() {
         <a href="#work" className={`cta ${away ? 'cta--away' : ''}`} onClick={seeWork} tabIndex={away ? -1 : 0}>
           <b>View my work ↘</b>
         </a>
+          </>
+        )}
       </div>
 
-      <div className={`addnote ${away ? 'addnote--away' : ''}`}>
-        <button className="linkbtn" onClick={addNote} tabIndex={away ? -1 : 0}>+ Add a sticky note</button>
-      </div>
+      {ready && (
+        <div className={`addnote ${away ? 'addnote--away' : ''}`}>
+          <button className="linkbtn" onClick={addNote} tabIndex={away ? -1 : 0}>+ Add a sticky note</button>
+        </div>
+      )}
     </section>
   )
 
@@ -361,7 +409,7 @@ export default function Home() {
   if (paged) {
     return (
       <div className="stage">
-        <PagerDots section={section} goTo={goTo} />
+        {ready && <PagerDots section={section} goTo={goTo} />}
         {hero}
         <WorkSlide section={section} />
         <AboutSlide section={section} at={2} />
