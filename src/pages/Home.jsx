@@ -40,7 +40,7 @@ const STICKERS = [
   ['cactus', '6.5%', '6%'],
   ['sun', '55.5%', '2%'],
   ['rocket', '93%', '30%'],
-  ['headphones', '15%', '66%'],
+  ['headphones', '28%', '66%'], // right of the Experience note (which ends at 24.5%), so it never sits on the Resume link
   ['camera', '55%', '64%'],
 ]
 
@@ -349,7 +349,7 @@ export default function Home() {
         {ready && (
           <>
         {/* experience & education */}
-        <Item l="0%" t="25.7%" w="26.5%" r={-1} boardRef={heroRef} away={away} className="note note--stone" delay={0.1}>
+        <Item l="-2%" t="25.7%" w="26.5%" r={-1} boardRef={heroRef} away={away} className="note note--stone" delay={0.1}>
           <p className="note__label">Experience & education</p>
           <ul className="stack">
             {education.map((e) => (

@@ -117,6 +117,8 @@ h1, h2, h3 { font-optical-sizing: auto; }
 .stack li { display: flex; flex-direction: column; gap: 1px; }
 .stack span { color: var(--ink-soft); }
 .links { display: flex; gap: calc(22 * var(--s)); font-size: max(12px, calc(15 * var(--s))); font-weight: 500; }
+.links { flex-wrap: wrap; row-gap: 6px; }
+.links a { white-space: nowrap; } /* a link and its arrow stay together; a link moves to the next line instead */
 .links a { text-underline-offset: 6px; text-decoration-thickness: 1.5px; } /* the line sits a little below the word, not tight against the letters */
 
 .polaroid { background: var(--card); padding: calc(10 * var(--s)) calc(10 * var(--s)) calc(14 * var(--s)); box-shadow: var(--shadow); z-index: 1; border-radius: var(--r-note); }
@@ -558,8 +560,7 @@ body {
   background-image: none; /* plain white: the old top glow would be invisible on it */
 }
 
-/* notes: neutral paper tones with a hairline edge */
-.note { border: 1px solid var(--border-neutral-default); }
+/* notes: flat colour with no outline (a light-grey hairline used to sit here and showed as a pale edge on the coloured cards) */
 /* the home cards each get a different design-system pastel */
 .note--paper { background: var(--butter); }
 .note--stone { background: var(--sky); }
@@ -592,7 +593,6 @@ body[data-dark] .nav__hint { background: var(--background-static-white-default);
 
 /* notes: the colours of the home cards are set in the "home cards each get a different pastel" block above */
 :root { --card: var(--background-surface-intense); --stone: var(--background-surface-intense); --sand: var(--background-surface-intense); }
-.note { border: 1px solid var(--border-neutral-default); }
 .chips em { background: var(--background-surface-subtle); }
 .flap__cell { background: linear-gradient(#fff 0 50%, #f3f2ef 50% 100%); }
 
@@ -1589,6 +1589,10 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 /* a highlighted phrase takes the weight of the text around it */
 .cs-mark { font-weight: inherit; }
 /* <<< FDS TEXT STYLES */
+
+/* The yellow headline card sits over the right edge of the Experience note (it starts at 22% of the board, the note ends at 24.5%), so the
+   lines of the note that are under it keep that strip clear and never run beneath the yellow card. Only on the collage layout (1000px and wider). */
+@media (min-width: 1000px) { .note--stone .note__label, .note--stone .stack li:first-child { padding-right: calc(2.5cqw + 4px); } }
 
 /* on a phone the nav is only the pill: the name label would float over the page text as it scrolls under the sticky nav */
 @media (max-width: 899px) { .nav__id { display: none; } }
