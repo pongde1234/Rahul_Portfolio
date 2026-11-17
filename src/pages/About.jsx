@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 import useEnter from '../components/useEnter.js'
+import usePastTop from '../components/usePastTop.js'
 import ArrowLabel from '../components/ArrowLabel.jsx'
 import { profile, about, strengths } from '../data/content.js'
 
@@ -516,6 +518,10 @@ export function AboutContent({ headingLevel = 1 }) {
   )
 }
 
+// The /about page. Scrolling up past its top goes back to Work (and from there to Home), so a visitor who came here from the home page's
+// "About me" link can scroll back the same way the home page's slides do.
 export default function About() {
+  const navigate = useNavigate()
+  usePastTop({ onGo: () => navigate('/works') })
   return <AboutContent headingLevel={1} />
 }

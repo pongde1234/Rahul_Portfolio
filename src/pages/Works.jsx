@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import WorkPane from '../components/WorkPane.jsx'
 import useMedia from '../components/useMedia.js'
+import usePastTop from '../components/usePastTop.js'
 import { usePageTransition } from '../components/PageTransition.jsx'
 
 // /works: same two-pane layout as the home work slide. On desktop the page itself is locked
@@ -10,12 +11,17 @@ import { usePageTransition } from '../components/PageTransition.jsx'
 // Scrolling on past the end of the list goes to the About page. It takes a fresh gesture: the scroll that
 // brings the list to its end (and the trackpad inertia after it) never carries straight on, so nobody lands on
 // About by accident. Works with the wheel, a swipe up and the keyboard.
+//
+// Scrolling up past the top of the list goes Home (the same rule, in components/usePastTop.js; the About page goes back to here).
 export default function Works() {
   const locked = useMedia('(min-width: 900px)')
   const navigate = useNavigate()
   const { active: curtain } = usePageTransition() // a case study is opening: leave the scroll alone
   const curtainRef = useRef(false)
   curtainRef.current = curtain
+
+  const listColumn = useCallback(() => (locked ? document.querySelector('.wk__main') : null), [locked])
+  usePastTop({ getScroller: listColumn, onGo: () => navigate('/'), enabled: !curtain })
 
   useEffect(() => {
     document.documentElement.classList.toggle('is-paged', locked)
