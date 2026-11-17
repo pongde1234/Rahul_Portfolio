@@ -13,7 +13,6 @@ import { projects } from '../data/content.js'
 
 const MotionLink = motion.create(Link)
 const slugify = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-const keywordOf = (t) => t?.match(/\*\*(.+?)\*\*/)?.[1] ?? null
 
 export default function Project() {
   const { slug } = useParams()
@@ -204,7 +203,6 @@ export default function Project() {
             <motion.span className="cs-mask__in" {...enter.mask(0.22)}>{p.headline ?? p.title}</motion.span>
           </h1>
           {p.subtitle && <motion.p className="cs__sub" {...enter(0.34)}>{p.subtitle}</motion.p>}
-          {p.hmw && <motion.p className="cs__hmw" {...enter(0.4)}>{keywordOf(p.hmw) ? p.hmw.replace(/\*\*/g, '') : p.hmw}</motion.p>}
           <motion.p className="cs__lead" {...enter(0.46)}>{p.overview}</motion.p>
         </div>
 

@@ -28,6 +28,7 @@ export default function Item({ children, l, t, w, r = 0, boardRef, delay = 0, cl
   }, [center, off])
 
   // direction to fly: outward from the centre of the board, and up
+  const drag = desktop && !away && !center
   const cx = num(l) + num(w) / 2 - 50
   const fly = { x: cx * 22, y: -760 + num(t) * 3, rotate: cx * 0.9 }
 
@@ -35,8 +36,9 @@ export default function Item({ children, l, t, w, r = 0, boardRef, delay = 0, cl
     <motion.div
       ref={ref}
       className={`item ${className} ${away ? 'item--away' : ''}`}
+      data-drag={drag ? '' : undefined} // the custom cursor turns into a hand over these
       style={{ '--l': l, '--t': t, '--w': w, '--r': `${r}deg` }}
-      drag={desktop && !away && !center}
+      drag={drag}
       dragControls={controls}
       dragListener={!handle}
       dragConstraints={boardRef}

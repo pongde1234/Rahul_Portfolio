@@ -46,12 +46,21 @@ export const strengths = [
 
 export const hobbies = ['cactus', 'sun', 'rocket', 'headphones', 'camera']
 
+// The "How might we" question of each case study. It is the bubble above the title on the Work page (the **bold** word is the keyword),
+// and it is also the question that closes "The problem" section of the case study itself (the keyword is highlighted there).
+const HMW = {
+  devices: `How might we give people their **time** back when adding hundreds of devices?`,
+  security: `How might we add security without taking away **ease**?`,
+  system: `How might we keep every screen **consistent**, whether a designer, a developer or AI builds it?`,
+}
+const hmwBlock = (q) => ({ type: 'callout', sub: 'The question we asked', body: q.replace(/\*\*(.+?)\*\*/g, '==$1==') })
+
 // Real projects (content from your Notion portfolio).
 export const projects = [
   {
     slug: 'onboarding-at-scale',
     // Bubble above the title on the Work page. The **bold** word also becomes the changing last word of the heading on the left.
-    hmw: `How might we give people their **time** back when adding hundreds of devices?`,
+    hmw: HMW.devices,
     title: 'Adding hundreds of devices from one Excel sheet',
     subtitle: 'Adding devices by hand was slow and full of mistakes',
     headline: 'How I made adding 250 devices take 8 minutes',
@@ -150,6 +159,7 @@ export const projects = [
         source: 'From interviews with technicians and operations managers',
         note: 'Nothing checked the details as people typed, so people had to start again.',
       },
+      hmwBlock(HMW.devices),
 
       // ---------- 03 What we learned ----------
       { type: 'heading', heading: 'What we learned' },
@@ -314,7 +324,7 @@ export const projects = [
   },
   {
     slug: 'security-without-friction',
-    hmw: `How might we add security without taking away **ease**?`,
+    hmw: HMW.security,
     title: 'Two-step verification people actually use',
     subtitle: 'Three ways to verify, built into the IO Sense sign-in',
     headline: 'How I made signing in safer without making it harder',
@@ -383,6 +393,7 @@ export const projects = [
         sub: 'Why it mattered',
         body: 'Several people use each customer’s system, each with their own account, so ==one weak or stolen password== puts the whole system at risk.',
       },
+      hmwBlock(HMW.security),
 
       // ---------- 03 Looking at other products ----------
       { type: 'heading', heading: 'Looking at other products' },
@@ -534,7 +545,7 @@ export const projects = [
   },
   {
     slug: 'faclon-design-system',
-    hmw: `How might we keep every screen **consistent**, whether a designer, a developer or AI builds it?`,
+    hmw: HMW.system,
     title: 'Building Faclon’s first design system',
     subtitle: 'Shared building blocks for designers, developers and Bruce, our AI',
     headline: 'How I built one set of building blocks for every Faclon screen',
@@ -605,6 +616,7 @@ export const projects = [
         text: 'A new set of screens took ==3 days== to build.',
         note: 'Each one started as a copy of an older screen, so the old mistakes came along too.',
       },
+      hmwBlock(HMW.system),
 
       // ---------- 03 Why we built it now ----------
       { type: 'heading', heading: 'Why we built it now' },

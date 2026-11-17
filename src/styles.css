@@ -448,6 +448,8 @@ html.custom-cursor :is(a[href], button:not(:disabled), summary, select, label[fo
 html.custom-cursor button.receipt__corner:not(:disabled) * { cursor: inherit !important; }
 .cursor { position: fixed; left: 0; top: 0; z-index: 300; pointer-events: none; will-change: transform; }
 .cursor__arrow { position: absolute; left: -3px; top: -2px; filter: drop-shadow(0 2px 3px rgba(29, 36, 51, 0.3)); }
+/* the hand over a card that can be moved (open), and while it is being moved (closed): white fill with an accent outline, centred on the pointer */
+.cursor__hand { position: absolute; left: -13px; top: -13px; color: var(--accent); fill: #fff; stroke: var(--accent); filter: drop-shadow(0 2px 3px rgba(29, 36, 51, 0.3)); }
 .cursor__tag {
   display: inline-block; margin: 20px 0 0 14px; padding: 4px 11px 5px; border-radius: 0 4px 4px 4px; transform-origin: top left;
   background: var(--accent); color: var(--text-static-white-normal); white-space: nowrap;
@@ -741,7 +743,6 @@ body[data-dark] .roll__in i:last-child { color: var(--text-brand-muted); }
 .cs__head { max-width: 1100px; margin: 0 auto; padding-top: 30px; }
 .cs__back { color: var(--ink-soft); text-decoration: none; display: inline-block; padding: 8px 0; }
 .cs__back:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 6px; }
-.cs__hmw { margin: 22px 0 14px; width: fit-content; max-width: 100%; padding: 12px 20px; background: var(--background-notice-faded); border: 1px solid var(--border-notice-disabled); color: var(--text-notice-normal); border-radius: 8px 8px 8px 0; }
 .cs__head h1 { margin-bottom: 18px; max-width: 18ch; }
 .cs__lead { max-width: 58ch; }
 /* header: big title block on the left, a facts card on the right */
@@ -1210,7 +1211,6 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 .cs__eyebrow i { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 4px; background: var(--ink); color: var(--text-static-white-normal); letter-spacing: 0; }
 .cs__head .cs__intro h1 { max-width: 22ch; margin-bottom: 18px; }
 .cs__head .cs__intro .cs__sub { margin: 0 0 6px; }
-.cs__intro .cs__hmw { margin: 22px 0 14px; }
 .cs__meta { margin: 34px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }
 .cs__meta > div { padding: 20px 24px 24px; border-left: 1px solid var(--line); }
 .cs__meta > div:first-child { border-left: 0; padding-left: 0; }
@@ -1554,7 +1554,7 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 /* HeadingSmallRegular */
 :is(.about__mail, .cs-opener) { font: var(--font-weight-regular) var(--font-size-300)/var(--line-height-300) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* BodyLargeRegular */
-:is(.cs__lead, .cs__hmw, .cs-callout, .cs-voice__text, .cs-rows--bare .cs-rows__t, .about__lead, .contact__lead, .cs-text p, .cs-rows__arrow) { font: var(--font-weight-regular) var(--font-size-200)/var(--line-height-200) var(--font-family); letter-spacing: var(--letter-spacing-100); }
+:is(.cs__lead, .cs-callout, .cs-voice__text, .cs-rows--bare .cs-rows__t, .about__lead, .contact__lead, .cs-text p, .cs-rows__arrow) { font: var(--font-weight-regular) var(--font-size-200)/var(--line-height-200) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* BodyLargeMedium */
 :is(.cs-sub, .cs-factrow dt, .cs-rows__t, .cs-rows__to b, .cs-card h3, .protocard__head h3, .hs__panel h4, .about .about__h2, .nav__brand) { font: var(--font-weight-medium) var(--font-size-200)/var(--line-height-200) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* BodyMediumRegular */

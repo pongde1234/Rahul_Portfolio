@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
+import { Grab, Hand } from 'lucide-react'
 import useMedia from './useMedia.js'
 import { profile } from '../data/content.js'
 
@@ -34,26 +35,49 @@ export default function Cursors() {
   const [label, setLabel] = useState(profile.name)
   const [visible, setVisible] = useState(false)
   const [native, setNative] = useState(false) // the normal pointer is showing (over a link, button or field)
+  const [hand, setHand] = useState(null) // 'grab' over something that can be moved, 'grabbing' while it is being moved
 
   useEffect(() => {
     if (!on) return undefined
     const root = document.documentElement
     root.classList.add('custom-cursor') // hides the normal pointer so there is only one
 
+    let pressing = false // a card is being moved: the closed hand stays until the mouse is let go, even if the pointer outruns the card
     const onMove = (e) => {
       if (e.pointerType && e.pointerType !== 'mouse') return
       mx.set(e.clientX)
       my.set(e.clientY)
       setVisible(true)
       setLabel(labelFor(e.target))
-      setNative(e.target instanceof Element && !!e.target.closest(NATIVE))
+      const isNative = e.target instanceof Element && !!e.target.closest(NATIVE)
+      setNative(isNative)
+      if (!pressing) setHand(!isNative && e.target instanceof Element && e.target.closest('[data-drag]') ? 'grab' : null)
+    }
+    const onDown = (e) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return
+      if (e.target instanceof Element && !e.target.closest(NATIVE) && e.target.closest('[data-drag]')) {
+        pressing = true
+        setHand('grabbing')
+      }
+    }
+    const onUp = (e) => {
+      if (!pressing) return
+      pressing = false
+      const t = document.elementFromPoint(e.clientX, e.clientY)
+      setHand(t && !t.closest(NATIVE) && t.closest('[data-drag]') ? 'grab' : null)
     }
     const onLeave = () => setVisible(false)
 
     window.addEventListener('pointermove', onMove, { passive: true })
+    window.addEventListener('pointerdown', onDown, { passive: true })
+    window.addEventListener('pointerup', onUp, { passive: true })
+    window.addEventListener('pointercancel', onUp, { passive: true })
     root.addEventListener('pointerleave', onLeave)
     return () => {
       window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
       root.removeEventListener('pointerleave', onLeave)
       root.classList.remove('custom-cursor')
     }
@@ -64,9 +88,14 @@ export default function Cursors() {
     <>
       {/* arrow: exactly on the pointer */}
       <motion.div className="cursor" style={{ x: mx, y: my, opacity: visible && !native ? 1 : 0 }} aria-hidden="true">
-        <svg className="cursor__arrow" width="20" height="22" viewBox="0 0 20 22">
-          <path d="M3 2l14 8-6.4 1.9L7.5 18.5z" style={{ fill: 'var(--accent)' }} stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
-        </svg>
+        {hand ? (
+          // over a card that can be moved: an open hand, and a closed one while it is being moved
+          hand === 'grabbing' ? <Grab className="cursor__hand" size={26} strokeWidth={2.2} /> : <Hand className="cursor__hand" size={26} strokeWidth={2.2} />
+        ) : (
+          <svg className="cursor__arrow" width="20" height="22" viewBox="0 0 20 22">
+            <path d="M3 2l14 8-6.4 1.9L7.5 18.5z" style={{ fill: 'var(--accent)' }} stroke="#fff" strokeWidth="1.6" strokeLinejoin="round" />
+          </svg>
+        )}
       </motion.div>
 
       {/* tag: follows with a tiny lag */}
