@@ -226,12 +226,9 @@ function BillGenerator({ outside }) {
     halfW.current = (billEl.current?.offsetWidth ?? 300) / 2
   }
 
-  // the bill is free: it flutters down, swaying, a light piece of paper rather than a falling weight
+  // the bill is free: it drops straight down, no sideways sway (fx and fr stay at 0)
   const fly = () => {
-    const s = sideRef.current
-    animate(fx, [0, 9 * s, -7 * s, 14 * s, -5 * s, 10 * s], { duration: 1.8, times: [0, 0.18, 0.4, 0.62, 0.82, 1], ease: 'easeInOut' })
-    animate(fr, [0, 4 * s, -3 * s, 8 * s, -4 * s, 7 * s], { duration: 1.8, times: [0, 0.18, 0.4, 0.62, 0.82, 1], ease: 'easeInOut' })
-    animate(fy, [0, 14, 110, 380, 780], { duration: 1.8, times: [0, 0.1, 0.38, 0.7, 1], ease: 'linear' }).then(finishTear)
+    animate(fy,[0, 14, 110, 380, 780], { duration: 1.8, times: [0, 0.1, 0.38, 0.7, 1], ease: 'linear' }).then(finishTear)
   }
   const finishTear = () => {
     setExitKind('tear')
