@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import Cover from './Cover.jsx'
 import HeroFigure from './HeroFigure.jsx'
 import useMedia from './useMedia.js'
@@ -151,8 +152,10 @@ export default function WorkPane({ forward = false, headingLevel = 1 }) {
 
                 <div className="wk__meta">
                   <Bubble text={p.hmw} open={!locked || hover === i} />
-                  <h3>{p.title}</h3>
-                  <p className="wk__blurb">{p.blurb}</p>
+                  <h3>
+                    {p.title}
+                    <ArrowRight className="wk__go" size={18} strokeWidth={2.25} aria-hidden="true" />
+                  </h3>
 
                   <div className="wk__co">
                     <i>{p.company.charAt(0)}</i>
@@ -201,8 +204,8 @@ export function WorkSlide({ section }) {
         reduce
           ? { duration: 0.01 }
           : state === 'in'
-            ? { duration: 0.7, ease: [0.22, 0.8, 0.2, 1], delay: 0.1 }
-            : { duration: 0.5, ease: [0.45, 0, 0.25, 1] }
+            ? { duration: 0.95, ease: [0.22, 0.8, 0.2, 1], delay: 0.15 }
+            : { duration: 0.75, ease: [0.4, 0, 0.2, 1] }
       }
       style={{ pointerEvents: state === 'in' ? 'auto' : 'none' }}
     >

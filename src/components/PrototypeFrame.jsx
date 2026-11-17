@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import useMedia from './useMedia.js'
+import ArrowLabel from './ArrowLabel.jsx'
 
 // A live prototype shown on a grey card: a title and a line about it, an Open button (opens the prototype full size in a new
 // tab), and the prototype itself, which is its own page (embed.html, see src/embed/main.jsx).
@@ -37,7 +38,7 @@ export default function PrototypeFrame({ demo = 'devices', viewW, viewH = 640, h
           <p>{blurb}</p>
         </div>
         <a className="protocard__open" href={src} target="_blank" rel="noreferrer">
-          Open
+          <ArrowLabel>Open ↗</ArrowLabel>
         </a>
       </div>
       <div ref={root} className={`proto${still ? ' proto--still' : ''}`} style={still ? undefined : { height: scaled ? viewH * scale : viewH }}>

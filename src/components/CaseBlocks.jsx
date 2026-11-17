@@ -1,5 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import Cover from './Cover.jsx'
+import ArrowLabel from './ArrowLabel.jsx'
 import BeforeAfter from './BeforeAfter.jsx'
 import FlowDemo from './FlowDemo.jsx'
 
@@ -185,7 +187,7 @@ export default function CaseBlock({ block, project, sectionId, sectionNum }) {
               <li key={it.from}>
                 <span className="cs-rows__n"><i>{num(i)}</i></span>
                 <span className="cs-rows__from">{it.from}</span>
-                <i className="cs-rows__arrow" aria-hidden="true">→</i>
+                <i className="cs-rows__arrow" aria-hidden="true"><ArrowRight size={22} strokeWidth={2.5} /></i>
                 <div className="cs-rows__to">
                   <b>{it.to}</b>
                   {it.body && <span>{it.body}</span>}
@@ -264,7 +266,7 @@ export default function CaseBlock({ block, project, sectionId, sectionNum }) {
         <Reveal className="cs-links">
           {block.items.map((l) => (
             <a key={l.url} className="btn" href={l.url} target="_blank" rel="noreferrer">
-              {l.label}
+              <ArrowLabel>{l.label}</ArrowLabel>
             </a>
           ))}
         </Reveal>

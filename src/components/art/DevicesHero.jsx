@@ -14,8 +14,9 @@ const FIELD = '#eef0f1'
 const EDGE = '#dee1e3'
 const GREEN = '#15803d'
 const RED = '#dc2626'
-const FONT = "'Inter Variable', Inter, system-ui, sans-serif"
-const MONO = "'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace"
+const FONT = "'DM Sans Variable', 'DM Sans', system-ui, sans-serif"
+const HEAD = "'Outfit Variable', 'Outfit', 'DM Sans Variable', system-ui, sans-serif" // the step titles and the big "8 min"
+const MONO = "'DM Mono', ui-monospace, monospace"
 
 const CW = 560
 const CH = 520
@@ -28,7 +29,7 @@ function Card({ x, y, step, title, children }) {
       <circle cx={CX} cy="46" r="21" fill={NAVY} />
       <text x={CX} y="54" fontFamily={FONT} fontSize="22" fontWeight="500" fill="#fff" textAnchor="middle">{step}</text>
       <text x={CX} y="88" fontFamily={MONO} fontSize="14" fill={MUTED} letterSpacing="1.8" textAnchor="middle">STEP {step} OF 3</text>
-      <text x={CX} y="124" fontFamily={FONT} fontSize="31" fontWeight="500" fill={INK} letterSpacing="-0.6" textAnchor="middle">{title}</text>
+      <text x={CX} y="124" fontFamily={HEAD} fontSize="31" fontWeight="500" fill={INK} letterSpacing="-0.6" textAnchor="middle">{title}</text>
       {children}
     </g>
   )
@@ -119,7 +120,7 @@ export default function DevicesHero() {
           <path d="M19 21l4 4 7-8" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
           <text x="44" y="27" fontFamily={FONT} fontSize="17" fontWeight="500" fill={GREEN}>Uploaded</text>
         </g>
-        <text x={CX} y="272" fontFamily={FONT} fontSize="84" fontWeight="500" fill={INK} letterSpacing="-3" textAnchor="middle">8 min</text>
+        <text x={CX} y="272" fontFamily={HEAD} fontSize="84" fontWeight="500" fill={INK} letterSpacing="-3" textAnchor="middle">8 min</text>
         <text fontFamily={FONT} fontSize="20" fill={BODY} textAnchor="middle">
           <tspan x={CX} y="312">for 250 devices,</tspan>
           <tspan x={CX} y="339">where 100 used to take 20.</tspan>

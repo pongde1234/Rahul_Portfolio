@@ -1,8 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-// the FDS fonts, imported directly (through '@faclon-labs/fds/fonts' the dev server drops them; a build is fine)
-import '@fontsource-variable/inter'
-import '@fontsource-variable/jetbrains-mono'
+// the same three fonts as the portfolio (see styles.css, "portfolio fonts"; embed.css sets them on the design system's tokens)
+import '@fontsource-variable/outfit'
+import '@fontsource-variable/dm-sans'
+import '@fontsource/dm-mono/400.css'
+import '@fontsource/dm-mono/500.css'
 import '@faclon-labs/fds/styles.css'
 import './embed.css'
 import { ThemeProvider } from '@faclon-labs/fds'

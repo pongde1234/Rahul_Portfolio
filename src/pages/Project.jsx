@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Lock, Pointer } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Lightbulb, Lock } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import ArrowLabel from '../components/ArrowLabel.jsx'
 import Cover from '../components/Cover.jsx'
 import CaseBlock from '../components/CaseBlocks.jsx'
 import PrototypeFrame from '../components/PrototypeFrame.jsx'
@@ -16,6 +17,7 @@ const keywordOf = (t) => t?.match(/\*\*(.+?)\*\*/)?.[1] ?? null
 
 export default function Project() {
   const { slug } = useParams()
+  const reduce = useReducedMotion()
   const idx = projects.findIndex((p) => p.slug === slug)
   const p = projects[idx]
   // the page's entrance: each part fades up in turn. When the page opens behind the curtain, the first part waits for the curtain to lift.
@@ -91,7 +93,7 @@ export default function Project() {
       <section className="section page wrap">
         <h1>That project isn't here</h1>
         <p>The link may be broken, or the project may have moved.</p>
-        <Link to="/works">View all projects →</Link>
+        <Link to="/works"><ArrowLabel>View all projects →</ArrowLabel></Link>
       </section>
     )
   }
@@ -161,7 +163,7 @@ export default function Project() {
       {/* only where the chips really are clickable (they drive the prototype) */}
       {hasPrototype && (
         <p className="cs__tl-hint">
-          <Pointer aria-hidden="true" />
+          <span className="cs__bulb"><Lightbulb aria-hidden="true" /></span>
           <span className="fine">Click a step to jump to it</span>
           <span className="touch">Tap a step to jump to it</span>
         </p>
@@ -185,7 +187,7 @@ export default function Project() {
   return (
     <article className="cs">
       <header className="cs__head">
-        <MotionLink to="/works" className="cs__back mono" {...enter(0, { x: -16 })}>← All projects</MotionLink>
+        <MotionLink to="/works" className="cs__back mono" {...enter(0, { x: -16 })}><ArrowLabel>← All projects</ArrowLabel></MotionLink>
         {/* the banner comes first, then the title block and the facts under it */}
         {!hasPrototype && (
           <motion.div className="cs__hero" style={{ '--c': p.color }} {...enter(0.05, { y: 40, scale: 0.97 })}>
@@ -238,6 +240,7 @@ export default function Project() {
           <ol>
             {toc.map((t, i) => (
               <li key={t.id}>
+                {current === t.id && <motion.i layoutId="toc-mark" className="cs__toc-mark" transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 38 }} aria-hidden="true" />}
                 <button className={current === t.id ? 'on' : ''} onClick={() => jump(t.id)}>
                   <span className="mono">{String(i + 1).padStart(2, '0')}</span>
                   {t.label}
@@ -277,8 +280,8 @@ export default function Project() {
           <aside className="cs__note">
             <Lock size={16} aria-hidden="true" />
             <p>
-              <b>A note on the screenshots.</b> Only a few screenshots from the real design are shown here, because of the privacy
-              policy and the non-disclosure agreement (NDA) I signed at Faclon Labs.
+              Only a few screenshots of the real design are shown, to respect the non-disclosure agreement I signed with Faclon
+              Labs. The prototype is rebuilt for this portfolio.
             </p>
           </aside>
         </div>
@@ -287,12 +290,12 @@ export default function Project() {
       <nav className="cs__next" aria-label="More projects">
         {projects.length > 2 && (
           <Link to={`/works/${prev.slug}`} className="cs__nextlink" onClick={(e) => open(e, prev)}>
-            <span className="mono">← Previous project</span>
+            <span className="mono"><ArrowLabel>← Previous project</ArrowLabel></span>
             <b>{prev.title}</b>
           </Link>
         )}
         <Link to={`/works/${next.slug}`} className={`cs__nextlink ${projects.length > 2 ? 'cs__nextlink--right' : 'cs__nextlink--solo'}`} onClick={(e) => open(e, next)}>
-          <span className="mono">Next project →</span>
+          <span className="mono"><ArrowLabel>Next project →</ArrowLabel></span>
           <b>{next.title}</b>
         </Link>
       </nav>

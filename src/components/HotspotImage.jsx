@@ -27,15 +27,15 @@ export default function HotspotImage({ src, alt, spots }) {
       </div>
 
       <div className="hs__panel" aria-live="polite">
-        <span className="hs__num">{i + 1}</span>
-        <div>
+        <span className="hs__num" key={`n${i}`}>{i + 1}</span>
+        <div key={i} className="hs__text">
           <h4>{cur.title}</h4>
           <p>{cur.body}</p>
         </div>
         <div className="hs__nav">
-          <button type="button" onClick={() => go(-1)} aria-label="Previous point">←</button>
+          <button type="button" onClick={() => go(-1)} aria-label="Previous point"><span className="arrow" data-dir="w" aria-hidden="true">←</span></button>
           <span className="mono">{i + 1} / {spots.length}</span>
-          <button type="button" onClick={() => go(1)} aria-label="Next point">→</button>
+          <button type="button" onClick={() => go(1)} aria-label="Next point"><span className="arrow" data-dir="e" aria-hidden="true">→</span></button>
         </div>
       </div>
     </div>

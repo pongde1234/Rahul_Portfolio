@@ -4,7 +4,7 @@ html, body, #root {
   margin: 0;
 }
 
-/* ---- the hint: a glowing ring and a pointer beside the control to click next ---- */
+/* ---- the hint: a pulsing dot on the control and a pointer beside it, showing what to click next ---- */
 .glow {
   position: relative;
   display: inline-flex;
@@ -16,14 +16,30 @@ html, body, #root {
   width: 100%;
 }
 
-.glow--on::before {
+/* the hint: a small pulsing dot on the control's top-right corner (no glow or outline around the control, which looked wrong on white),
+   and the pointer beside it */
+.glow--on::before,
+.glow--on::after {
   content: '';
   position: absolute;
-  inset: calc(var(--spacing-4) * -1);
-  border-radius: var(--radius-l);
+  top: calc(var(--spacing-4) * -1);
+  right: calc(var(--spacing-4) * -1);
+  width: var(--spacing-12);
+  height: var(--spacing-12);
+  border-radius: 50%;
+  background: var(--background-brand-default);
   pointer-events: none;
-  box-shadow: 0 0 0 var(--spacing-2) var(--background-brand-default), 0 0 var(--spacing-16) var(--spacing-4) var(--background-brand-faded);
-  animation: glow-pulse 1.6s ease-in-out infinite;
+}
+
+.glow--on::before {
+  z-index: 2;
+  box-sizing: border-box;
+  border: var(--spacing-2) solid var(--background-surface-intense);
+}
+
+.glow--on::after {
+  z-index: 1;
+  animation: glow-ripple 1.8s ease-out infinite;
 }
 
 .glow__cursor {
@@ -39,9 +55,9 @@ html, body, #root {
   animation: glow-nudge 1.6s ease-in-out infinite;
 }
 
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.45; }
-  50% { opacity: 1; }
+@keyframes glow-ripple {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(3.4); opacity: 0; }
 }
 
 @keyframes glow-nudge {
@@ -50,7 +66,7 @@ html, body, #root {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glow--on::before, .glow__cursor { animation: none; }
+  .glow--on::after, .glow__cursor { animation: none; }
 }
 
 /* text for screen readers only: what to do next */
@@ -61,4 +77,17 @@ html, body, #root {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* ---- fonts: the same as the portfolio. The design system's text styles read these tokens, so setting them here changes every piece of
+   text in the prototypes; the heading and display styles get the headline font ---- */
+:root {
+  --font-family: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-family-code: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --font-family-mono: var(--font-family-code);
+  --font-heading: 'Outfit Variable', 'Outfit', 'DM Sans Variable', system-ui, sans-serif;
+}
+
+:is([class*='Heading'], [class*='Display']) {
+  font-family: var(--font-heading);
 }

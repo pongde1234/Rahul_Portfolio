@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import useEnter from '../components/useEnter.js'
+import ArrowLabel from '../components/ArrowLabel.jsx'
 import { profile, about, strengths } from '../data/content.js'
 
 // The About page: a big headline, the intro and the ways to reach me on the left, and on the right a bill generator that prints a receipt
@@ -44,19 +45,82 @@ function Barcode() {
   )
 }
 
-// The bill generator: a slim slot, and the bill it prints, which slides smoothly out of the slot. Two things you can do:
+// The bill generator: a slim slot, and the bill it prints, which slides smoothly out of the slot. Things you can do:
 //   - press work mode / off-duty (on the bill): the bill is pulled back in and a new one is printed
-//   - take hold of any of its four corners: hovering a corner folds it in, as if a hand were pulling it, and if you keep hold the bill
-//     tears off, swings away and falls, a torn stub stays in the slot, and a new bill is printed. Let go early and the corner springs
-//     back. A click or a tap anywhere on the bill pulls it straight away, from the corner nearest to it (Enter on a corner does too).
+//   - hover one of its two top corners: the corner curls in, as if a hand were reaching for it, and uncurls when the pointer leaves.
+//   - press that corner and pull down: the bill follows your hand and the paper stretches taut. Let go early and it springs back.
+//     Pull far enough and it gives: the rip runs across the top in a flash with a tearing sound, the bill comes free, flutters down,
+//     a torn stub stays in the slot, and a new bill is printed.
+//   - or just click or tap the bill (or press Enter on a corner): the same tear, without having to pull.
 const CORNERS = [
   { id: 'tl', label: 'top left', side: -1 },
   { id: 'tr', label: 'top right', side: 1 },
-  { id: 'bl', label: 'bottom left', side: -1 },
-  { id: 'br', label: 'bottom right', side: 1 },
 ]
 const FOLD = 56 // how far (px) a corner folds in before the bill tears off
 const SCRAPS = [0, 1, 2, 3, 4, 5, 6] // the bits of paper that fly off a tear
+const TENSION = 0.55 // `pull` goes from 0 to this while the paper is stretched taut, then on to 1 as it rips
+const REACH = 110 // how far (px) you have to pull a corner before the paper gives
+const TILT = 11 // how far (degrees) the bill pivots, on its far top corner, by the time it has torn
+
+// The tearing sound, made on the spot (no audio file): a burst of filtered noise that rises in pitch with a ragged volume, like fibres
+// letting go one after another, then a short snap as the paper comes free. It plays only from a click or a press, so browsers allow it.
+const VOLUME = 0.07 // how loud the tear is (0 to 1): kept very quiet, a soft rip and not a startle
+let audioCtx
+function playTear() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext
+    if (!AC) return
+    audioCtx = audioCtx || new AC()
+    const ctx = audioCtx
+    if (ctx.state === 'suspended') ctx.resume()
+    const t0 = ctx.currentTime
+    const dur = 0.24
+    const noise = (seconds) => {
+      const len = Math.max(1, Math.floor(ctx.sampleRate * seconds))
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate)
+      const d = buf.getChannelData(0)
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
+      const src = ctx.createBufferSource()
+      src.buffer = buf
+      return src
+    }
+    // the rip
+    const rip = noise(dur + 0.05)
+    const band = ctx.createBiquadFilter()
+    band.type = 'bandpass'
+    band.Q.value = 0.8
+    band.frequency.setValueAtTime(1300, t0)
+    band.frequency.exponentialRampToValueAtTime(4300, t0 + dur)
+    const high = ctx.createBiquadFilter()
+    high.type = 'highpass'
+    high.frequency.value = 650
+    const g = ctx.createGain()
+    const steps = 48
+    const curve = new Float32Array(steps)
+    for (let i = 0; i < steps; i++) {
+      const k = i / (steps - 1)
+      curve[i] = Math.sin(Math.PI * Math.min(k * 1.12, 1)) ** 0.7 * (0.3 + Math.random() * 0.7) * VOLUME
+    }
+    g.gain.setValueCurveAtTime(curve, t0, dur)
+    rip.connect(band).connect(high).connect(g).connect(ctx.destination)
+    rip.start(t0)
+    rip.stop(t0 + dur + 0.05)
+    // the snap
+    const snap = noise(0.05)
+    const sh = ctx.createBiquadFilter()
+    sh.type = 'highpass'
+    sh.frequency.value = 2600
+    const sg = ctx.createGain()
+    sg.gain.setValueAtTime(0.0001, t0 + dur - 0.02)
+    sg.gain.exponentialRampToValueAtTime(VOLUME * 0.9, t0 + dur)
+    sg.gain.exponentialRampToValueAtTime(0.0001, t0 + dur + 0.045)
+    snap.connect(sh).connect(sg).connect(ctx.destination)
+    snap.start(t0 + dur - 0.02)
+    snap.stop(t0 + dur + 0.06)
+  } catch {
+    /* no audio: the tear is silent */
+  }
+}
 
 // The line the paper rips along (its top edge, where it meets the slot): a regular zigzag, one tooth every 14px or so.
 // JAG is the height in px of each point, left to right; the stub left in the slot (billgen__stub in styles.css) has the same teeth.
@@ -98,18 +162,6 @@ const BILL = {
     rotate: 1.2,
     transition: { y: { duration: 1.9, ease: [0.22, 0.7, 0.2, 1], delay: 0.15 }, rotate: { duration: 1.2, ease: 'easeOut' } },
   },
-  // torn off at a corner, in three beats (the rip itself is drawn by ripPath, in step with this):
-  //   1. tension: the paper is pulled taut and shivers, still joined to the slot
-  //   2. the rip: the pulled corner is dragged down and out while the far top corner stays joined, so the bill pivots on it and a
-  //      jagged gap opens along the top, wider and wider, as the tear runs across (about half a second, slow enough to see)
-  //   3. free: the last of the paper lets go with a snap, and the bill swings out and falls
-  // Pulled by a top corner the hand is right at the tear, so it pivots a little less than when it is pulled by the bottom (a longer lever).
-  tear: ({ side, top }) => ({
-    x: [0, 1 * side, -1 * side, 2 * side, 6 * side, 10 * side, 64 * side],
-    y: [0, 3, 2, 5, 10, 16, 640],
-    rotate: top ? [1.2, 2 * side, 1.4 * side, 3 * side, 11 * side, 13 * side, 40 * side] : [1.2, 2.2 * side, 1.4 * side, 3.5 * side, 14 * side, 16 * side, 44 * side],
-    transition: { duration: 2, times: [0, 0.04, 0.08, 0.12, 0.34, 0.4, 1], ease: ['easeOut', 'easeInOut', 'easeIn', [0.35, 0, 0.6, 1], 'easeOut', [0.55, 0, 1, 0.6]] },
-  }),
   // pulled back in (a new bill is coming), or already gone (it was torn off)
   exit: ({ kind }) => (kind === 'tear' ? { opacity: 0, transition: { duration: 0 } } : { y: '-100%', transition: { duration: 0.45, ease: [0.5, 0, 0.8, 0.4] } }),
 }
@@ -122,7 +174,7 @@ function BillGenerator({ outside }) {
   const [exitKind, setExitKind] = useState('retract') // how the bill on show leaves: 'retract' (pulled in) or 'tear'
   const [stub, setStub] = useState(false) // the torn end left hanging from the slot
   const [folding, setFolding] = useState(null) // the corner being folded in, if any
-  const [from, setFrom] = useState('br') // the corner the last bill was torn from
+  const [from, setFrom] = useState('tr') // the corner the last bill was torn from
   const work = mode === 'work'
   const items = work ? strengths : splitList(outside)
 
@@ -131,9 +183,32 @@ function BillGenerator({ outside }) {
   const fold = useMotionValue(0) // how far the held corner is folded in, in px
   const foldPx = useTransform(fold, (v) => `${v}px`)
   const grip = useRef(null)
-  const rip = useMotionValue(0) // how far the tear has run across the top of the bill (0 to 1)
+
+  // The pull. `pull` runs 0 -> TENSION while the paper is held and stretched (it follows the hand), then TENSION -> 1 in a flash as it
+  // rips. The bill pivots on its far top corner by TILT x pull, and the jagged tear opens in step with it. After that it is free: fx, fy
+  // and fr are its flight, a flutter down.
+  const pull = useMotionValue(0)
+  const fx = useMotionValue(0)
+  const fy = useMotionValue(0)
+  const fr = useMotionValue(0)
   const sideRef = useRef(1)
-  const ripClip = useTransform(rip, (r) => ripPath(r, sideRef.current))
+  const halfW = useRef(150)
+  const pullAnim = useRef(null)
+  const drag = useRef(null) // the corner being pulled by hand: { c, x0, y0, t }
+  const billEl = useRef(null)
+  const rad = (p) => (sideRef.current * TILT * p * Math.PI) / 180
+  const ripClip = useTransform(pull, (p) => ripPath(Math.min(Math.max((p - TENSION) / (1 - TENSION), 0), 1), sideRef.current))
+  const pullRotate = useTransform([pull, fr], ([p, f]) => sideRef.current * TILT * p + f)
+  // pivoting on the far top corner, not on the middle: the shift that keeps that corner where it is
+  const pullX = useTransform([pull, fx], ([p, f]) => -sideRef.current * halfW.current * (1 - Math.cos(rad(p))) + f)
+  const pullY = useTransform([pull, fy], ([p, f]) => sideRef.current * halfW.current * Math.sin(rad(p)) + f)
+  const resetPull = () => {
+    pullAnim.current?.stop()
+    pull.set(0)
+    fx.set(0)
+    fy.set(0)
+    fr.set(0)
+  }
 
   // A hover takes hold only if the pointer has moved since the bill finished printing: a pointer resting on a corner while the next
   // bill prints does not start pulling it.
@@ -146,7 +221,27 @@ function BillGenerator({ outside }) {
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
-  const tearOff = (c) => {
+  const aim = (c) => {
+    sideRef.current = CORNERS.find((k) => k.id === c)?.side ?? 1
+    halfW.current = (billEl.current?.offsetWidth ?? 300) / 2
+  }
+
+  // the bill is free: it flutters down, swaying, a light piece of paper rather than a falling weight
+  const fly = () => {
+    const s = sideRef.current
+    animate(fx, [0, 9 * s, -7 * s, 14 * s, -5 * s, 10 * s], { duration: 1.8, times: [0, 0.18, 0.4, 0.62, 0.82, 1], ease: 'easeInOut' })
+    animate(fr, [0, 4 * s, -3 * s, 8 * s, -4 * s, 7 * s], { duration: 1.8, times: [0, 0.18, 0.4, 0.62, 0.82, 1], ease: 'easeInOut' })
+    animate(fy, [0, 14, 110, 380, 780], { duration: 1.8, times: [0, 0.1, 0.38, 0.7, 1], ease: 'linear' }).then(finishTear)
+  }
+  const finishTear = () => {
+    setExitKind('tear')
+    fold.set(0)
+    setFolding(null)
+    setPhase('printing')
+    setN((x) => x + 1) // the old bill leaves at once; resetPull runs when it has gone (onExitComplete)
+  }
+  // the paper gives: the rip runs across in a flash, with the sound, and the bill comes free
+  const commit = (c) => {
     if (phaseRef.current !== 'ready') return
     setFrom(c)
     if (reduce) {
@@ -154,50 +249,90 @@ function BillGenerator({ outside }) {
       setN((x) => x + 1)
       return
     }
-    sideRef.current = CORNERS.find((k) => k.id === c)?.side ?? 1
-    rip.set(0)
+    aim(c)
     setStub(true)
     setFolding(c)
     setPhase('tearing')
-    // the rip starts once the paper has been pulled taut, and runs across in about half a second
-    animate(rip, 1, { duration: 0.46, delay: 0.2, ease: [0.35, 0, 0.7, 1] })
+    playTear()
+    navigator.vibrate?.(18)
+    pullAnim.current = animate(pull, 1, { duration: 0.2, ease: [0.55, 0, 0.9, 0.55] })
+    pullAnim.current.then(fly)
   }
-  // hover: the corner folds in over about three quarters of a second; keep hold and the bill tears off
+
+  // hover: the corner curls in, and stays curled while the pointer is on it. Hovering never tears the bill.
   const grab = (c) => {
-    if (reduce || phaseRef.current !== 'ready' || !moved.current) return
+    if (reduce || phaseRef.current !== 'ready' || !moved.current || drag.current) return
     grip.current?.stop()
     setFolding(c)
-    grip.current = animate(fold, FOLD, { duration: 0.75, ease: [0.4, 0, 0.9, 0.5], onComplete: () => tearOff(c) })
+    grip.current = animate(fold, FOLD, { duration: 0.5, ease: [0.3, 0.7, 0.3, 1] })
   }
-  // let go early: the corner springs back
+  // the pointer leaves: the corner uncurls
   const release = () => {
-    if (phaseRef.current !== 'ready') return
+    if (phaseRef.current !== 'ready' || drag.current) return
     grip.current?.stop()
     grip.current = animate(fold, 0, { duration: 0.3, ease: 'easeOut', onComplete: () => setFolding(null) })
   }
-  // click, tap or Enter: a quick pull
-  const pull = (c) => {
-    if (phaseRef.current !== 'ready') return
-    if (reduce) return tearOff(c)
+  // click, tap or Enter: the same tear, without pulling: the paper tightens for a beat, then gives
+  const quickTear = (c) => {
+    if (phaseRef.current !== 'ready' || drag.current) return
+    if (reduce) return commit(c)
+    aim(c)
     grip.current?.stop()
+    pullAnim.current?.stop()
     setFolding(c)
-    grip.current = animate(fold, FOLD, { duration: 0.22, ease: 'easeIn', onComplete: () => tearOff(c) })
+    grip.current = animate(fold, FOLD, { duration: 0.2, ease: 'easeOut' })
+    pullAnim.current = animate(pull, [pull.get(), 0.2, 0.46, TENSION], { duration: 0.34, times: [0, 0.4, 0.75, 1], ease: 'easeOut' })
+    pullAnim.current.then(() => commit(c))
   }
 
-  // a click anywhere on the bill (not on its buttons) tears it off, from the corner nearest the click
+  // press a top corner and pull down: the bill follows the hand, held taut. Pull far enough and the paper gives.
+  const onCornerDown = (e, c) => {
+    if (phaseRef.current !== 'ready' || reduce) return
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    aim(c)
+    grip.current?.stop()
+    pullAnim.current?.stop()
+    moved.current = true
+    setFolding(c)
+    grip.current = animate(fold, FOLD, { duration: 0.2, ease: 'easeOut' })
+    drag.current = { c, x0: e.clientX, y0: e.clientY, t: 0 }
+  }
+  const onCornerMove = (e) => {
+    const d = drag.current
+    if (!d) return
+    const s = sideRef.current
+    const len = Math.hypot(0.6 * s, 1)
+    const along = ((e.clientX - d.x0) * 0.6 * s + (e.clientY - d.y0)) / len // down and a little outward
+    const t = Math.min(Math.max(along / REACH, 0), 1)
+    d.t = Math.max(d.t, t)
+    pull.set(TENSION * t)
+    if (t >= 1) {
+      drag.current = null
+      commit(d.c)
+    }
+  }
+  const onCornerUp = (e, cancelled) => {
+    const d = drag.current
+    if (!d) return
+    drag.current = null
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    if (!cancelled && d.t < 0.06) return quickTear(d.c) // hardly moved: it was a click
+    // let go before it gave: the paper springs back
+    pullAnim.current = animate(pull, 0, { type: 'spring', stiffness: 240, damping: 13 })
+  }
+
+  // a click anywhere on the bill (not on its buttons) tears it off, from the top corner nearest the click
   const clickBill = (e) => {
     if (e.target.closest('.receipt__switch, .receipt__corner')) return
     const r = e.currentTarget.getBoundingClientRect()
-    const v = e.clientY < r.top + r.height / 2 ? 't' : 'b'
-    const h = e.clientX < r.left + r.width / 2 ? 'l' : 'r'
-    pull(v + h)
+    quickTear(e.clientX < r.left + r.width / 2 ? 'tl' : 'tr') // the bill only comes away from its top corners
   }
 
   const choose = (m) => {
     if (m === mode || phase === 'tearing') return
     grip.current?.stop()
     fold.set(0)
-    rip.set(0)
+    resetPull()
     setFolding(null)
     setExitKind('retract')
     setStub(false)
@@ -210,18 +345,11 @@ function BillGenerator({ outside }) {
       setPhase('ready')
       setStub(false)
       moved.current = false // from now on, only a pointer that moves can take hold of it
-    } else if (def === 'tear') {
-      setExitKind('tear')
-      fold.set(0)
-      rip.set(0)
-      setFolding(null)
-      setPhase('printing')
-      setN((x) => x + 1)
     }
   }
 
   const side = CORNERS.find((c) => c.id === from)?.side ?? 1
-  const custom = { kind: exitKind, side, top: from.startsWith('t') }
+  const custom = { kind: exitKind, side }
 
   return (
     <aside className="billgen" aria-label={`${profile.name}’s café: the bill generator`}>
@@ -238,23 +366,25 @@ function BillGenerator({ outside }) {
               style={{ left: `${side > 0 ? 96 - k * 11 : 4 + k * 11}%` }}
               initial={{ opacity: 0, y: 4, x: 0, rotate: 0 }}
               animate={{ opacity: [0, 1, 1, 0], y: [4, 14 + (k % 3) * 8, 46 + k * 9, 110 + k * 12], x: [0, 6 * side, (k % 2 ? 14 : -10) * side, (k % 2 ? 30 : -18) * side], rotate: [0, 90 * side, 200 * side, 330 * side] }}
-              transition={{ duration: 0.9, delay: 0.24 + k * 0.05, ease: 'easeOut', times: [0, 0.15, 0.6, 1] }}
+              transition={{ duration: 0.9, delay: 0.04 + k * 0.03, ease: 'easeOut', times: [0, 0.15, 0.6, 1] }}
               aria-hidden="true"
             />
           ))}
-        <AnimatePresence mode="wait" initial custom={custom}>
+        <AnimatePresence mode="wait" initial custom={custom} onExitComplete={resetPull}>
           <motion.div
             key={`${mode}-${n}`}
             className={`receipt${phase === 'tearing' ? ' receipt--torn' : ''}${phase === 'ready' ? ' receipt--ready' : ''}`}
             onClick={clickBill}
-            style={{ '--fold': foldPx, clipPath: ripClip, transformOrigin: phase === 'tearing' ? (side > 0 ? '0% 0%' : '100% 0%') : '50% 0%' }}
+            style={{ '--fold': foldPx }}
             custom={custom}
             variants={reduce ? undefined : BILL}
             initial={reduce ? false : 'hidden'}
-            animate={reduce ? { y: 0, rotate: 1.2 } : phase === 'tearing' ? 'tear' : 'print'}
+            animate={reduce ? { y: 0, rotate: 1.2 } : 'print'}
             exit={reduce ? { opacity: 0 } : 'exit'}
             onAnimationComplete={reduce ? undefined : onBillDone}
           >
+            {/* the paper, in a wrapper that moves with the pull (it pivots, tears and flies); the corners below stay under the hand */}
+            <motion.div ref={billEl} className="receipt__pull" style={{ x: pullX, y: pullY, rotate: pullRotate, clipPath: ripClip }}>
             <div className="receipt__paper" data-fold={folding ?? undefined}>
               <p className="receipt__brand">{profile.name.toUpperCase()}’S CAFÉ</p>
               <p className="receipt__sub">est. 2022 · order #{String(n + 1).padStart(2, '0')}</p>
@@ -294,28 +424,33 @@ function BillGenerator({ outside }) {
                 <i />
               </span>
             )}
+            </motion.div>
 
-            {/* the four corners you can take hold of */}
+            {/* the two top corners you can take hold of: hover curls one, press and pull tears */}
             {CORNERS.map((c) => (
               <button
                 key={c.id}
                 type="button"
                 className={`receipt__corner receipt__corner--${c.id}`}
                 aria-label={`Tear off the bill from the ${c.label} corner`}
-                tabIndex={c.id === 'br' ? 0 : -1}
+                tabIndex={c.id === 'tr' ? 0 : -1}
                 disabled={phase !== 'ready'}
                 onPointerEnter={() => grab(c.id)}
                 onPointerLeave={release}
+                onPointerDown={(e) => onCornerDown(e, c.id)}
+                onPointerMove={onCornerMove}
+                onPointerUp={(e) => onCornerUp(e, false)}
+                onPointerCancel={(e) => onCornerUp(e, true)}
                 onClick={(e) => {
                   e.stopPropagation()
-                  pull(c.id)
+                  if (e.detail === 0) quickTear(c.id) // Enter or Space on the focused corner (a pointer press is handled above)
                 }}
               />
             ))}
           </motion.div>
         </AnimatePresence>
       </div>
-      <p className={`billgen__hint${phase === 'ready' ? ' billgen__hint--on' : ''}`} aria-hidden="true"><span className="fine">Hover a corner or click the bill to tear it off.</span><span className="touch">Tap the bill to tear it off.</span></p>
+      <p className={`billgen__hint${phase === 'ready' ? ' billgen__hint--on' : ''}`} aria-hidden="true"><span className="fine">Hover a top corner, then pull it down to tear. Or just click the bill.</span><span className="touch">Pull a top corner down to tear it. Or just tap the bill.</span></p>
     </aside>
   )
 }
@@ -340,12 +475,12 @@ export function AboutContent({ headingLevel = 1 }) {
           </Title>
           <motion.p className="about__lead" {...enter(0.3)}>{about.intro}</motion.p>
           <motion.a className="about__mail" href={`mailto:${profile.email}`} {...enter(0.4)}>
-            {profile.email} <span aria-hidden="true">↗</span>
+            {profile.email} <span className="arrow" data-dir="ne" aria-hidden="true">↗</span>
           </motion.a>
           <motion.p className="about__links" {...enter(0.5)}>
-            <a href={profile.resume} target="_blank" rel="noreferrer">Resume (PDF) ↗</a>
+            <a href={profile.resume} target="_blank" rel="noreferrer"><ArrowLabel>Resume (PDF) ↗</ArrowLabel></a>
             {profile.socials.map((s) => (
-              <a key={s.label} href={s.url} target="_blank" rel="noreferrer">{s.label} ↗</a>
+              <a key={s.label} href={s.url} target="_blank" rel="noreferrer"><ArrowLabel>{`${s.label} ↗`}</ArrowLabel></a>
             ))}
           </motion.p>
         </div>
@@ -368,6 +503,17 @@ export function AboutContent({ headingLevel = 1 }) {
             {strengths.map((s) => <em key={s}>{s}</em>)}
           </div>
         </motion.div>
+      </div>
+
+      {/* the closing call to action (it used to be a slide of its own on the home page) */}
+      <div className="wrap about__reach">
+        <motion.section className="about__contact" aria-label="Contact" {...enter(0.8)}>
+          <h2>Let’s work together.</h2>
+          <p className="contact__lead">Email me about a role or a project.</p>
+          <a className="btn btn--accent" href={`mailto:${profile.email}`}>Email me</a>
+          {/* the address as plain text too, for visitors with no mail app: one click selects it all */}
+          <p className="about__address">{profile.email}</p>
+        </motion.section>
       </div>
     </section>
   )

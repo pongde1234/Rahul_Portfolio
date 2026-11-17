@@ -62,8 +62,8 @@ h1, h2, h3 { font-optical-sizing: auto; }
   border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 18px -8px rgba(29, 36, 51, 0.25);
 }
 .nav__link { padding: 9px 14px; border-radius: 8px; text-decoration: none; transition: background 0.2s, color 0.2s; }
-.nav__link:hover { background: var(--bg); }
-.nav__link.active { background: var(--ink); color: var(--text-static-white-normal); }
+.nav__link { position: relative; }
+.nav__link.active { color: var(--text-static-white-normal); }
 .nav__resume { margin-left: 3px; position: relative; }
 .nav__resume::before { content: ''; position: absolute; left: -3px; top: 25%; height: 50%; width: 1px; background: var(--line); }
 .nav__drop { position: relative; }
@@ -115,7 +115,7 @@ h1, h2, h3 { font-optical-sizing: auto; }
 .stack li { display: flex; flex-direction: column; gap: 1px; }
 .stack span { color: var(--ink-soft); }
 .links { display: flex; gap: calc(22 * var(--s)); font-size: max(12px, calc(15 * var(--s))); font-weight: 500; }
-.links a { text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.links a { text-underline-offset: 6px; text-decoration-thickness: 1.5px; } /* the line sits a little below the word, not tight against the letters */
 
 .polaroid { background: var(--card); padding: calc(10 * var(--s)) calc(10 * var(--s)) calc(14 * var(--s)); box-shadow: var(--shadow); z-index: 1; border-radius: var(--r-note); }
 .polaroid__img {
@@ -176,7 +176,7 @@ h1, h2, h3 { font-optical-sizing: auto; }
 .addnote { margin-top: 6px; min-height: 44px; display: flex; align-items: center; }
 .addnote form { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
 .linkbtn { color: var(--ink-soft); background: none; border: 0; cursor: pointer; padding: 12px 10px; min-height: 44px; }
-.linkbtn:hover { color: var(--ink); text-decoration: underline; }
+.linkbtn:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 6px; }
 
 .btn { cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px;
   padding: 10px 20px; border: 2px solid var(--ink); border-radius: 8px; background: var(--background-notice-faded);
@@ -206,7 +206,7 @@ h1, h2, h3 { font-optical-sizing: auto; }
 .pagetitle { font-size: clamp(2.6rem, 7vw, 4.8rem); margin: 8px 0 28px; }
 .lead { font-size: 1.2rem; line-height: 1.6; color: var(--ink-soft); margin-bottom: 28px; }
 .socials { display: flex; gap: 8px 22px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
-.socials a { text-underline-offset: 4px; padding: 10px 4px; }
+.socials a { text-underline-offset: 6px; padding: 10px 4px; }
 
 .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 38px 32px; margin-bottom: 44px; }
 .pcard {
@@ -374,12 +374,13 @@ body[data-dark] .nav__hint { background: var(--background-static-white-faded); c
 .nav__hint {
   position: absolute; top: calc(100% - 8px); left: 0; z-index: 120; pointer-events: none;
   border-radius: 0 8px 8px 8px; padding: 10px 20px;
-  opacity: 0; transform: translateY(-6px) scale(0.96); transform-origin: top left;
-  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2), background 0.4s, color 0.4s;
+  opacity: 0; transform: translateY(-4px); will-change: opacity, transform;
+  /* smooth: no overshoot or scaling; a short delay before it hides, so crossing the edge of the name never makes it flicker */
+  transition: opacity 0.22s ease 0.12s, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) 0.12s, background 0.4s, color 0.4s;
 }
 /* hover only: a mouse click on the name leaves it focused, so plain :focus-within kept the tooltip stuck open; keyboard focus (:focus-visible) still shows it */
-@media (hover: hover) { .nav__id:hover .nav__hint { opacity: 1; transform: none; } }
-.nav__id:has(:focus-visible) .nav__hint { opacity: 1; transform: none; }
+@media (hover: hover) { .nav__id:hover .nav__hint { opacity: 1; transform: none; transition-delay: 0.05s, 0.05s, 0s, 0s; } }
+.nav__id:has(:focus-visible) .nav__hint { opacity: 1; transform: none; transition-delay: 0s; }
 
 /* ---- home hero: truly centred, and never taller than the screen ---- */
 .board { width: min(100%, 980px, calc((100vh - 150px) * 1.4797)); }
@@ -437,6 +438,10 @@ html.custom-cursor, html.custom-cursor * { cursor: none !important; }
 /* over a link, a button or a field the normal pointer comes back and the custom arrow steps aside (see Cursors.jsx, keep the two lists the same) */
 html.custom-cursor :is(a[href], button:not(:disabled), summary, select, label[for], [role='button'], [role='tab'], .cta, .receipt--ready) { cursor: pointer !important; }
 html.custom-cursor :is(input, textarea) { cursor: text !important; }
+/* the pieces inside a link or button (a label span, an arrow, a highlight) take the same pointer: the "hide the pointer" rule above
+   would otherwise reach them one by one, and the pointer would vanish over the text of a link */
+html.custom-cursor :is(a[href], button:not(:disabled), summary, select, label[for], [role='button'], [role='tab'], .cta, .receipt--ready) * { cursor: inherit !important; }
+html.custom-cursor button.receipt__corner:not(:disabled) * { cursor: inherit !important; }
 .cursor { position: fixed; left: 0; top: 0; z-index: 300; pointer-events: none; will-change: transform; }
 .cursor__arrow { position: absolute; left: -3px; top: -2px; filter: drop-shadow(0 2px 3px rgba(29, 36, 51, 0.3)); }
 .cursor__tag {
@@ -723,7 +728,7 @@ body[data-dark] .nav__hint { background: var(--background-static-white-default);
 .nav__brand { display: inline-flex; transition: transform 0.15s; }
 .nav__brand:active { transform: scale(0.95); }
 .roll { display: inline-block; overflow: hidden; height: 1.3em; vertical-align: bottom; }
-.roll__in { display: block; transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1); transition-delay: calc(var(--i) * 45ms); }
+.roll__in { display: block; transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); transition-delay: calc(var(--i) * 25ms); }
 .roll__in i { display: block; height: 1.3em; font-style: normal; white-space: pre; }
 .roll__in i:last-child { color: var(--text-brand-normal); }
 .nav__brand:hover .roll__in, .nav__brand:focus-visible .roll__in { transform: translateY(-1.3em); }
@@ -733,7 +738,7 @@ body[data-dark] .roll__in i:last-child { color: var(--text-brand-muted); }
 .cs { padding: 40px clamp(16px, 4vw, 48px) 120px; }
 .cs__head { max-width: 1100px; margin: 0 auto; padding-top: 30px; }
 .cs__back { color: var(--ink-soft); text-decoration: none; display: inline-block; padding: 8px 0; }
-.cs__back:hover { color: var(--ink); text-decoration: underline; }
+.cs__back:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 6px; }
 .cs__hmw { margin: 22px 0 14px; width: fit-content; max-width: 100%; padding: 12px 20px; background: var(--background-notice-faded); border: 1px solid var(--border-notice-disabled); color: var(--text-notice-normal); border-radius: 8px 8px 8px 0; }
 .cs__head h1 { margin-bottom: 18px; max-width: 18ch; }
 .cs__lead { max-width: 58ch; }
@@ -761,7 +766,7 @@ body[data-dark] .roll__in i:last-child { color: var(--text-brand-muted); }
 }
 .cs__toc button span { padding-top: 2px; opacity: 0.7; }
 .cs__toc button:hover { color: var(--ink); }
-.cs__toc button.on { color: var(--ink); border-left-color: var(--accent); }
+.cs__toc button.on { color: var(--ink); }
 
 .cs__content { max-width: 760px; display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(36px, 6vh, 64px); }
 .cs-text h2 { font-size: clamp(1.4rem, 2.2vw, 1.8rem); font-weight: 500; letter-spacing: -0.03em; margin: 0 0 14px; scroll-margin-top: 110px; }
@@ -827,10 +832,10 @@ body[data-dark] .roll__in i:last-child { color: var(--text-brand-muted); }
 .cs__process li span { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 4px; background: var(--ink); color: var(--text-static-white-normal); font-size: 0.64rem; }
 
 /* ===== CARDS: separate items you scan as a set, in no order (options, decisions, team roles, result numbers, quotes) =====
-   One look for all of them: a slightly warm fill and rounded corners, with no border and no shadow. */
+   One look for all of them: a light grey fill and rounded corners, with no border and no shadow. */
 .cs-intro { margin-bottom: 18px !important; }
 .cs-card, .cs-stat, .cs-voice, .cs__glance {
-  background: var(--background-surface-subtle);
+  background: var(--background-surface-moderate);
   border: 0;
   border-radius: 12px;
   box-shadow: none;
@@ -1024,7 +1029,7 @@ body[data-dark] .roll__in i:last-child { color: var(--text-brand-muted); }
 /* next project: quiet link, not a floating card */
 .cs__nextlink { box-shadow: none; background: transparent; border: 0; border-top: 1px solid var(--ink); border-radius: 0; padding: 22px 0 0; }
 .cs__nextlink:hover { transform: none; box-shadow: none; }
-.cs__nextlink:hover b { text-decoration: underline; text-underline-offset: 4px; }
+.cs__nextlink:hover b { text-decoration: underline; text-underline-offset: 6px; }
 
 @media (max-width: 899px) {
   .cs__glance { grid-template-columns: 1fr 1fr; }
@@ -1331,8 +1336,8 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 /* no labels: a number and the text (the bold part of the text is its title) */
 .cs-rows--bare li { grid-template-columns: 32px minmax(0, 1fr); }
 /* finding -> goal: number, the finding, an arrow, then the goal with its note under it */
-.cs-rows--map li { grid-template-columns: 32px minmax(0, 1fr) 24px minmax(0, 1.3fr); align-items: center; }
-.cs-rows__arrow { color: var(--text-brand-normal); }
+.cs-rows--map li { grid-template-columns: 32px minmax(0, 1fr) 32px minmax(0, 1.3fr); align-items: center; }
+.cs-rows__arrow { display: grid; place-items: center; color: var(--text-neutral-muted); } /* a bold icon in a neutral grey: the old text arrow was thin and blue */
 .cs-rows__to { display: flex; flex-direction: column; gap: 2px; }
 .cs-rows__to span { color: var(--text-neutral-subtle); }
 
@@ -1432,7 +1437,7 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 .about__mail:hover { color: var(--text-brand-normal); border-color: var(--accent); }
 .about__links { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 22px 0 0; }
 .about__links a { color: var(--ink-soft); text-decoration: none; }
-.about__links a:hover { color: var(--ink); text-decoration: underline; }
+.about__links a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 6px; }
 
 .about__more { display: grid; gap: 40px; margin-top: clamp(56px, 10vh, 96px); }
 .about__more > * { max-width: 760px; }
@@ -1537,15 +1542,15 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
    FDS scale and switch to their phone values below 768px by themselves. Nothing here is bold: the heaviest weight is Medium (500).
    Each group is one FDS text style: to style a new text element, add it to the list of the style it should use. */
 /* DisplaySmallMedium */
-:is(.cs__head .cs__intro h1, .about__title, .contact__body h2) { font: var(--font-weight-medium) var(--font-size-800)/var(--line-height-800) var(--font-family); letter-spacing: var(--letter-spacing-50); }
+:is(.cs__head .cs__intro h1, .about__title) { font: var(--font-weight-medium) var(--font-size-800)/var(--line-height-800) var(--font-family); letter-spacing: var(--letter-spacing-50); }
 /* HeadingXLargeRegular */
 :is(.note--hero h1, .wk__side h1, .wk__side h2, .wk__kw, .cs-finding, .cs-stat b, .cs__gcard b, .section h2, .work__head h2) { font: var(--font-weight-regular) var(--font-size-600)/var(--line-height-600) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* HeadingLargeRegular */
-:is(.cs-h2, .wk__lead) { font: var(--font-weight-regular) var(--font-size-500)/var(--line-height-500) var(--font-family); letter-spacing: var(--letter-spacing-100); }
+:is(.cs-h2, .wk__lead, .about__contact h2) { font: var(--font-weight-regular) var(--font-size-500)/var(--line-height-500) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* HeadingMediumRegular */
-:is(.cs-opener, .cs__head .cs__intro .cs__sub, .cs__tl-end, .cs__proto .cs__tl-end, .cs__nextlink b, .wk__meta h3, .wcard__meta h3, .pcard__meta h3) { font: var(--font-weight-regular) var(--font-size-400)/var(--line-height-400) var(--font-family); letter-spacing: var(--letter-spacing-100); }
+:is(.cs__head .cs__intro .cs__sub, .cs__tl-end, .cs__proto .cs__tl-end, .cs__nextlink b, .wk__meta h3, .wcard__meta h3, .pcard__meta h3) { font: var(--font-weight-regular) var(--font-size-400)/var(--line-height-400) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* HeadingSmallRegular */
-:is(.about__mail) { font: var(--font-weight-regular) var(--font-size-300)/var(--line-height-300) var(--font-family); letter-spacing: var(--letter-spacing-100); }
+:is(.about__mail, .cs-opener) { font: var(--font-weight-regular) var(--font-size-300)/var(--line-height-300) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* BodyLargeRegular */
 :is(.cs__lead, .cs__hmw, .cs-callout, .cs-voice__text, .cs-rows--bare .cs-rows__t, .about__lead, .contact__lead, .cs-text p, .cs-rows__arrow) { font: var(--font-weight-regular) var(--font-size-200)/var(--line-height-200) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* BodyLargeMedium */
@@ -1555,7 +1560,7 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 /* BodyMediumMedium */
 :is(.nav__link, .btn, .cs-links .btn, .protocard__open, .hs__num, .cta b, .flapcard__title, .stack strong, .links a, .wk__co b, .wk__co i, .cs__toc button.on, .note__label, .receipt__title, .wk__head span:first-child) { font: var(--font-weight-medium) var(--font-size-100)/var(--line-height-100) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* BodySmallRegular */
-:is(.cs__tl-hint, .footer, .dots button, .contact__foot, .billgen__hint, .cs__nextlink span, .wk__head span:last-child) { font: var(--font-weight-regular) var(--font-size-75)/var(--line-height-75) var(--font-family); letter-spacing: var(--letter-spacing-100); }
+:is(.cs__tl-hint, .footer, .dots button, .contact__foot, .about__address, .billgen__hint, .cs__nextlink span, .wk__head span:last-child) { font: var(--font-weight-regular) var(--font-size-75)/var(--line-height-75) var(--font-family); letter-spacing: var(--letter-spacing-100); }
 /* BodySmallMedium */
 :is(.cs__tl-steps li > span, .cs__tl-steps li > button, .cs__proto .cs__tl-steps li > button, .cs-badge, .cs-voice__label, .ba__tabs button, .hs__dot, .cursor__tag, .cs__eyebrow i, .cs__gcard > span) { font: var(--font-weight-medium) var(--font-size-75)/var(--line-height-75) var(--font-family); }
 /* CodeMediumRegular */
@@ -1618,7 +1623,114 @@ button.ui-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 
 @media (prefers-reduced-motion: reduce) { .wk__pill-text { animation: none; } }
 
 /* the opening intro on the home page: the name card is alone in the middle of the screen first (Home.jsx, intro) */
-.nav, .rulers { transition: opacity 0.8s ease; }
-body.intro-on .nav, body.intro-on .rulers { opacity: 0; pointer-events: none; }
+.rulers { transition: opacity 0.8s ease; }
+body.intro-on .rulers { opacity: 0; pointer-events: none; } /* the top bar stays during the intro; only the rulers wait */
 .flapcard__title { transition: opacity 0.6s ease; }
 .flapcard__title--wait { opacity: 0; }
+
+/* the bulb beside the timeline hint: on hover it turns yellow and swells a little once, then settles back to its normal size (no tilt, no flicker) */
+.cs__bulb { display: inline-grid; place-items: center; padding: 6px; margin: -6px; border-radius: 50%; cursor: default; }
+.cs__bulb svg { transition: color 0.35s ease, fill 0.35s ease, filter 0.35s ease; fill: transparent; filter: drop-shadow(0 0 0 transparent); }
+.cs__bulb:hover svg { color: var(--global-cider-600); fill: var(--global-cider-300); filter: drop-shadow(0 0 5px var(--global-cider-400)); animation: bulbswell 0.5s ease-in-out 1; }
+@keyframes bulbswell { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .cs__bulb:hover svg { animation: none; } }
+
+/* the closing contact line on the About content: a hairline, the heading, one line and the email button, in plain ink (no card) */
+.about__reach { margin-top: clamp(48px, 8vh, 80px); }
+.about__contact { max-width: 760px; padding-top: clamp(28px, 4vh, 40px); border-top: 1px solid var(--line); text-align: left; }
+.about__contact h2 { margin: 0 0 8px; }
+.about__contact .contact__lead { margin: 0 0 24px; color: var(--ink-soft); }
+.about__foot { margin: 0; padding: 28px 0 36px; text-align: center; }
+.about__address { margin: 14px 0 0; color: var(--ink-soft); user-select: all; }
+
+/* the bill is pulled by hand: the wrapper that moves with the pull, and the corners you press and drag (no scrolling or text selection) */
+.receipt__pull { position: relative; will-change: transform; }
+.receipt--ready { user-select: none; -webkit-user-select: none; }
+.receipt__corner { touch-action: none; }
+html.custom-cursor button.receipt__corner:not(:disabled) { cursor: grab !important; }
+html.custom-cursor button.receipt__corner:not(:disabled):active { cursor: grabbing !important; }
+
+/* ================= small interactions (only where something can be clicked) ================= */
+/* the arrow at the end of a link or button nudges the way it points */
+.arrow { display: inline-block; will-change: transform; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); } /* will-change: the moving arrow gets plain grey-scale smoothing, with no coloured fringes */
+:is(a, button):is(:hover, :focus-visible) .arrow[data-dir='ne'] { transform: translate(2px, -2px); }
+:is(a, button):is(:hover, :focus-visible) .arrow[data-dir='se'] { transform: translate(2px, 2px); }
+:is(a, button):is(:hover, :focus-visible) .arrow[data-dir='e'] { transform: translateX(4px); }
+:is(a, button):is(:hover, :focus-visible) .arrow[data-dir='w'] { transform: translateX(-4px); }
+
+/* links whose underline appears on hover now draw in from the left, a little below the text */
+.about__links a, .cs__back { position: relative; text-decoration: none; }
+.about__links a:hover, .cs__back:hover { text-decoration: none; }
+.about__links a::after, .cs__back::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 1.5px; background: currentColor;
+  transform: scaleX(0); transform-origin: left center; transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.about__links a::after { bottom: -2px; }
+.cs__back::after { bottom: 3px; }
+.about__links a:is(:hover, :focus-visible)::after, .cs__back:is(:hover, :focus-visible)::after { transform: scaleX(1); }
+
+/* buttons sink a little when pressed */
+.btn:active { transform: translateY(0) scale(0.97); box-shadow: var(--shadow); }
+.cta:active { transform: translateX(-50%) scale(0.97); box-shadow: var(--shadow); }
+@media (max-width: 999px) { .cta:active { transform: scale(0.97); } }
+.protocard__open { transition: transform 0.2s, opacity 0.2s; }
+.protocard__open:hover { transform: translateY(-1px); }
+.protocard__open:active { transform: scale(0.96); }
+
+/* the nav: highlights that slide between the links (Nav.jsx) */
+.nav__bg { position: absolute; inset: 0; border-radius: 8px; }
+/* layers, bottom to top: the pale hover highlight, the dark current-page highlight, then the labels, so the hover one can never cover the dark one */
+.nav__bg--hover { background: var(--background-neutral-faded); z-index: 0; }
+.nav__bg--active { background: var(--ink); z-index: 1; }
+.nav__label { position: relative; z-index: 2; }
+.nav__resume:hover { background: none; }
+
+/* the case-study tabs: the dark highlight slides between them */
+.ba__tabs--slide button { position: relative; }
+.ba__tabs--slide button.on { background: none; }
+.ba__tabbg { position: absolute; inset: 0; border-radius: 4px; background: var(--ink); z-index: 0; }
+.ba__tablabel { position: relative; z-index: 1; }
+
+/* the "On this page" stepper: the blue marker slides to the section you are in */
+.cs__toc li { position: relative; }
+.cs__toc-mark { position: absolute; left: -1px; top: 0; bottom: 0; width: 2px; background: var(--accent); z-index: 1; }
+
+/* the Work list: an arrow slides in beside a project title */
+.wk__go { display: inline-block; margin-left: 8px; vertical-align: -2px; opacity: 0; transform: translateX(-8px); transition: opacity 0.2s, transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.wk__link:is(:hover, :focus-visible) .wk__go { opacity: 1; transform: none; }
+
+/* the real-design panel: the text fades up when the point changes */
+.hs__text, .hs__num { animation: hsin 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+@keyframes hsin { from { opacity: 0; transform: translateY(6px); } }
+
+/* the home cards: pointing at one straightens it and lifts it a little, like picking up a note */
+@media (hover: hover) {
+  .item:is(.note, .polaroid, .flapcard, .usernote-wrap) { transition: rotate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), translate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .item:is(.note, .polaroid, .flapcard, .usernote-wrap):hover:not(.item--away) { rotate: 0deg; translate: 0 -4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow, .wk__go, .hs__text, .hs__num, .about__links a::after, .cs__back::after, .protocard__open { transition: none; animation: none; }
+  :is(a, button):is(:hover, :focus-visible) .arrow { transform: none; }
+  .wk__go { transform: none; }
+  .item:is(.note, .polaroid, .flapcard, .usernote-wrap):hover { rotate: var(--r); translate: none; }
+}
+
+/* ================= portfolio fonts ================= */
+/* Outfit for the big headlines, DM Sans for text and buttons, DM Mono for the small labels.
+   The sizes and weights are the ones in the text styles above; only the family changes. The prototype pages (src/embed) do not load
+   this file, so they keep the product fonts. */
+:root {
+  --font-family: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-family-code: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --font-family-mono: var(--font-family-code);
+  --font-heading: 'Outfit Variable', 'Outfit', 'DM Sans Variable', system-ui, sans-serif;
+}
+/* the headlines: the page titles, the section headings, the hero line and the big result numbers (the same lists as the three biggest
+   text styles above; this comes last so it also beats the narrow-board overrides). Only the family changes: size, weight and spacing
+   are the text styles' own. */
+:root :is(.cs__head .cs__intro h1, .about__title, .note--hero h1, .wk__side h1, .wk__side h2, .wk__kw, .cs-finding, .cs-stat b, .cs__gcard b, .section h2, .work__head h2, .cs-h2, .wk__lead, .about__contact h2) { font-family: var(--font-heading); }
+/* the small "What I'm good at" heading is label-sized, so it stays in the text font like the case studies' small sub-heads */
+:root:root .about .about__h2 { font-family: var(--font-family); }
+/* the project titles (the Work list and the project cards) are headlines too */
+:root:root :is(.wk__meta h3, .wcard__meta h3, .pcard__meta h3) { font-family: var(--font-heading); }

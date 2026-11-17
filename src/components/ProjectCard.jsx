@@ -14,7 +14,6 @@ export default function ProjectCard({ p, i = 0 }) {
           {[p.company, p.year].filter(Boolean).join(' · ')}
         </small>
         <h3>{p.title}</h3>
-        <p>{p.blurb}</p>
         <div className="chips">
           {p.tags.map((t) => (
             <em key={t}>{t}</em>

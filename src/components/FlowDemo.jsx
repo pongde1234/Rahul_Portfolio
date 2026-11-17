@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { FLOWS } from './mockups/Mockups.jsx'
 import HotspotImage from './HotspotImage.jsx'
 
@@ -14,6 +15,9 @@ export default function FlowDemo({ kind, real, spots, caption }) {
   const native = Boolean(Flow.native) // drawn at its real size, not as a scaled 880 x 540 canvas
   const bare = Boolean(Flow.bare) // draws its own screen: no box, background or border around it
   const [mode, setMode] = useState('flow')
+  const tabId = useId()
+  const reduce = useReducedMotion()
+  const slide = reduce ? { duration: 0 } : { type: 'spring', stiffness: 520, damping: 40 }
   const [scale, setScale] = useState(0.8)
   const stage = useRef(null)
 
@@ -29,13 +33,15 @@ export default function FlowDemo({ kind, real, spots, caption }) {
 
   return (
     <figure className="ba">
-      <div className="ba__tabs" role="group" aria-label="View">
+      <div className="ba__tabs ba__tabs--slide" role="group" aria-label="View">
         <button type="button" className={mode === 'flow' ? 'on' : ''} aria-pressed={mode === 'flow'} onClick={() => setMode('flow')}>
-          Try the flow
+          {mode === 'flow' && <motion.span layoutId={`${tabId}-tab`} className="ba__tabbg" transition={slide} />}
+          <span className="ba__tablabel">Try the flow</span>
         </button>
         {real && (
           <button type="button" className={mode === 'real' ? 'on' : ''} aria-pressed={mode === 'real'} onClick={() => setMode('real')}>
-            Real design
+            {mode === 'real' && <motion.span layoutId={`${tabId}-tab`} className="ba__tabbg" transition={slide} />}
+            <span className="ba__tablabel">Real design</span>
           </button>
         )}
       </div>

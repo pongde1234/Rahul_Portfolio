@@ -5,16 +5,16 @@ import Sticker from '../components/Stickers.jsx'
 import SplitFlap from '../components/SplitFlap.jsx'
 import HeroFigure from '../components/HeroFigure.jsx'
 import ProjectCard from '../components/ProjectCard.jsx'
+import ArrowLabel from '../components/ArrowLabel.jsx'
 import { WorkSlide } from '../components/WorkPane.jsx'
 import AboutSlide from '../components/AboutSlide.jsx'
-import ContactSlide from '../components/ContactSlide.jsx'
 import { AboutContent } from './About.jsx'
 import useMedia from '../components/useMedia.js'
 import { profile, education, strengths, hobbies, projects } from '../data/content.js'
 
 const NOTE_COLORS = ['var(--coral)', 'var(--sky)', 'var(--butter)', 'var(--mint)', 'var(--blush)']
-const SECTIONS = ['hello', 'work', 'about', 'contact']
-const SECTION_LABELS = { hello: 'Home', work: 'Work', about: 'About', contact: 'Contact' }
+const SECTIONS = ['hello', 'work', 'about']
+const SECTION_LABELS = { hello: 'Home', work: 'Work', about: 'About' }
 const LAST = SECTIONS.length - 1
 
 function useStoredNotes() {
@@ -69,6 +69,9 @@ function usePager(enabled) {
     let touchY = null
 
     let needQuiet = false
+    let lastDir = 0 // which way the last wheel event went
+    let over = 0 // how far the wheel has been pushed past the end of a scrolling list
+    let lastInner = 0 // when a list last used a wheel event
 
     // the work slide has its own scrolling column: scroll it first, change slides only at its top/bottom.
     // Wheel notches, keys and swipes all glide to their target (a short ease each frame) instead of jumping a whole
@@ -86,7 +89,7 @@ function usePager(enabled) {
         glideRaf = 0
         return
       }
-      sc.scrollTop += diff * 0.2
+      sc.scrollTop += diff * 0.13 // a soft tail: wheel notches blend into one glide
       glideRaf = requestAnimationFrame(() => glide(sc))
     }
     const innerScroll = (dy) => {
@@ -111,7 +114,7 @@ function usePager(enabled) {
       if (now < lockUntil) return
       if (goTo(ref.current + dir)) {
         stopGlide()
-        lockUntil = now + 850
+        lockUntil = now + 1000
         needQuiet = true
       }
     }
@@ -122,10 +125,32 @@ function usePager(enabled) {
       const now = performance.now()
       const gap = now - lastEvent
       lastEvent = now
+      const dir = e.deltaY > 0 ? 1 : -1
+      if (dir !== lastDir) {
+        // turning round is a new gesture: it must never wait for the old one's momentum to die
+        acc = 0
+        over = 0
+        needQuiet = false
+      }
+      lastDir = dir
       if (now < lockUntil) return // transition running
       if (innerScroll(e.deltaY)) {
-        needQuiet = true // reaching the end must not instantly flip the slide: wait for a fresh gesture
+        over = 0
         acc = 0
+        lastInner = now
+        return
+      }
+      // The work and about slides have a list that scrolls inside them. Once it is at its end (or its top), keep pushing the same
+      // way and the next (or previous) slide follows, in the same scroll: no pause and fresh gesture needed. A short wait right
+      // after the list ends lets a trackpad's momentum die out first, so it does not fly through a whole slide.
+      if (ref.current === 1 || ref.current === 2) {
+        if (now - lastInner < 250) return
+        if (gap > 180) over = 0
+        over += Math.abs(e.deltaY)
+        if (over >= 160) {
+          over = 0
+          step(dir)
+        }
         return
       }
       if (needQuiet) {
@@ -203,7 +228,7 @@ function NoteField({ value, onChange, autoFocus }) {
 
 function PagerDots({ section, goTo }) {
   return (
-    <nav className={`dots ${section === LAST ? 'dots--light' : ''}`} aria-label="Sections">
+    <nav className="dots" aria-label="Sections">
       {SECTIONS.map((id, i) => (
         <button key={id} className={section === i ? 'on' : ''} onClick={() => goTo(i)} aria-label={`Go to ${SECTION_LABELS[id]}`} aria-current={section === i}>
           <span>{SECTION_LABELS[id]}</span>
@@ -284,10 +309,6 @@ export default function Home() {
       document.documentElement.classList.remove('is-paged')
     }
   }, [paged])
-  useEffect(() => {
-    document.body.toggleAttribute('data-dark', paged && section === LAST)
-    return () => document.body.removeAttribute('data-dark')
-  }, [paged, section])
 
   // Drops a blank sticky note on the desk; the visitor types straight into it.
   const addNote = () => {
@@ -339,8 +360,8 @@ export default function Home() {
             ))}
           </ul>
           <div className="links">
-            <Link to="/about">About me →</Link>
-            <a href={profile.resume} target="_blank" rel="noreferrer">Resume (PDF) ↗</a>
+            <Link to="/about"><ArrowLabel>About me →</ArrowLabel></Link>
+            <a href={profile.resume} target="_blank" rel="noreferrer"><ArrowLabel>Resume (PDF) ↗</ArrowLabel></a>
           </div>
         </Item>
 
@@ -391,7 +412,7 @@ export default function Home() {
         ))}
 
         <a href="#work" className={`cta ${away ? 'cta--away' : ''}`} onClick={seeWork} tabIndex={away ? -1 : 0}>
-          <b>View my work ↘</b>
+          <b><ArrowLabel>View my work ↘</ArrowLabel></b>
         </a>
           </>
         )}
@@ -413,7 +434,6 @@ export default function Home() {
         {hero}
         <WorkSlide section={section} />
         <AboutSlide section={section} at={2} />
-        <ContactSlide section={section} at={3} />
       </div>
     )
   }
@@ -431,26 +451,12 @@ export default function Home() {
               <ProjectCard key={p.slug} p={p} i={i} />
             ))}
           </div>
-          <p className="center"><Link className="btn" to="/works">All projects →</Link></p>
+          <p className="center"><Link className="btn" to="/works"><ArrowLabel>All projects →</ArrowLabel></Link></p>
         </div>
       </section>
 
       <section id="about" className="about-stack">
         <AboutContent headingLevel={2} />
-      </section>
-
-      <section id="contact" className="section section--ink" data-color-scheme="dark">
-        <div className="wrap center">
-          <p className="eyebrow">Contact</p>
-          <h2>Let's work together.</h2>
-          <p className="contact__lead">Email me about a role or a project.</p>
-          <a className="btn btn--accent" href={`mailto:${profile.email}`}>Email {profile.email}</a>
-          <div className="socials">
-            {profile.socials.map((s) => (
-              <a key={s.label} href={s.url} target="_blank" rel="noreferrer">{s.label} ↗</a>
-            ))}
-          </div>
-        </div>
       </section>
     </>
   )

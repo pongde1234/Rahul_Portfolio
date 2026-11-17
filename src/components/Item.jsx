@@ -43,14 +43,14 @@ export default function Item({ children, l, t, w, r = 0, boardRef, delay = 0, cl
       dragMomentum={false}
       dragElastic={0.08}
       whileDrag={{ scale: 1.04, zIndex: 60, cursor: 'grabbing' }}
-      initial={center ? { opacity: 0, scale: 1.3 } : { opacity: 0, y: 24 }}
+      initial={center ? { opacity: 0, scale: 1.8 } : { opacity: 0, y: 24 }}
       animate={
         away
           ? { opacity: 0, x: fly.x, y: fly.y, rotate: fly.rotate, scale: 0.92 }
           : center
             ? off
-              ? { opacity: 1, x: off.x, y: off.y, rotate: 0, scale: 1.55 }
-              : { opacity: 0, scale: 1.3 }
+              ? { opacity: 1, x: off.x, y: off.y, rotate: 0, scale: 2.3 } // big in the middle, then it shrinks as it travels to its place
+              : { opacity: 0, scale: 1.8 }
             : { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }
       }
       transition={

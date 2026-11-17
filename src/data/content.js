@@ -517,7 +517,7 @@ export const projects = [
   },
   {
     slug: 'faclon-design-system',
-    hmw: `How might we keep every screen, even the ones AI builds, **consistent**?`,
+    hmw: `How might we keep every screen **consistent**, whether a designer, a developer or AI builds it?`,
     title: 'Building Faclon’s first design system',
     subtitle: 'Shared building blocks for designers, developers and Bruce, our AI',
     headline: 'How I built one set of building blocks for every Faclon screen',
