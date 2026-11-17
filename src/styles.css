@@ -127,7 +127,7 @@ h1, h2, h3 { font-optical-sizing: auto; }
 
 .flapcard { background: var(--card); padding: calc(18 * var(--s)) calc(20 * var(--s)) calc(20 * var(--s)); box-shadow: var(--shadow); z-index: 3; border-radius: var(--r-note); }
 .flapcard__title { margin-bottom: calc(14 * var(--s)); }
-.flap { display: grid; grid-template-columns: repeat(15, 1fr); gap: calc(4 * var(--s)); }
+.flap { display: grid; grid-template-columns: repeat(16, 1fr); gap: calc(4 * var(--s)); }
 .flap__cell {
   position: relative; display: grid; place-items: center; aspect-ratio: 0.72; overflow: hidden;
   background: linear-gradient(#fff 0 50%, #eef0f4 50% 100%); border: 1px solid #c3cad4; border-radius: 2px;
@@ -1717,20 +1717,11 @@ html.custom-cursor button.receipt__corner:not(:disabled):active { cursor: grabbi
 }
 
 /* ================= portfolio fonts ================= */
-/* Outfit for the big headlines, DM Sans for text and buttons, DM Mono for the small labels.
+/* DM Sans for headlines, text and buttons, DM Mono for the small labels.
    The sizes and weights are the ones in the text styles above; only the family changes. The prototype pages (src/embed) do not load
    this file, so they keep the product fonts. */
 :root {
   --font-family: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-family-code: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --font-family-mono: var(--font-family-code);
-  --font-heading: 'Outfit Variable', 'Outfit', 'DM Sans Variable', system-ui, sans-serif;
 }
-/* the headlines: the page titles, the section headings, the hero line and the big result numbers (the same lists as the three biggest
-   text styles above; this comes last so it also beats the narrow-board overrides). Only the family changes: size, weight and spacing
-   are the text styles' own. */
-:root :is(.cs__head .cs__intro h1, .about__title, .note--hero h1, .wk__side h1, .wk__side h2, .wk__kw, .cs-finding, .cs-stat b, .cs__gcard b, .section h2, .work__head h2, .cs-h2, .wk__lead, .about__contact h2) { font-family: var(--font-heading); }
-/* the small "What I'm good at" heading is label-sized, so it stays in the text font like the case studies' small sub-heads */
-:root:root .about .about__h2 { font-family: var(--font-family); }
-/* the project titles (the Work list and the project cards) are headlines too */
-:root:root :is(.wk__meta h3, .wcard__meta h3, .pcard__meta h3) { font-family: var(--font-heading); }

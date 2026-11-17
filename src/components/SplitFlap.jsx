@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-const COLS = 15
+const COLS = 16
 const ROWS = 2
 const POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-// "LINE ONE|LINE TWO" -> 30 chars (2 rows x 15 cols)
+// "LINE ONE|LINE TWO" -> 32 chars (2 rows x 16 cols)
 const layout = (phrase) =>
   phrase
     .split('|')

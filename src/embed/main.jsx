@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 // the same three fonts as the portfolio (see styles.css, "portfolio fonts"; embed.css sets them on the design system's tokens)
-import '@fontsource-variable/outfit'
 import '@fontsource-variable/dm-sans'
 import '@fontsource/dm-mono/400.css'
 import '@fontsource/dm-mono/500.css'

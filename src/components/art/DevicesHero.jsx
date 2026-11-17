@@ -15,7 +15,7 @@ const EDGE = '#dee1e3'
 const GREEN = '#15803d'
 const RED = '#dc2626'
 const FONT = "'DM Sans Variable', 'DM Sans', system-ui, sans-serif"
-const HEAD = "'Outfit Variable', 'Outfit', 'DM Sans Variable', system-ui, sans-serif" // the step titles and the big "8 min"
+const HEAD = FONT // the step titles and the big "8 min"
 const MONO = "'DM Mono', ui-monospace, monospace"
 
 const CW = 560

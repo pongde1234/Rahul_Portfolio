@@ -80,14 +80,10 @@ html, body, #root {
 }
 
 /* ---- fonts: the same as the portfolio. The design system's text styles read these tokens, so setting them here changes every piece of
-   text in the prototypes; the heading and display styles get the headline font ---- */
+   text in the prototypes ---- */
 :root {
   --font-family: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-family-code: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --font-family-mono: var(--font-family-code);
-  --font-heading: 'Outfit Variable', 'Outfit', 'DM Sans Variable', system-ui, sans-serif;
 }
 
-:is([class*='Heading'], [class*='Display']) {
-  font-family: var(--font-heading);
-}

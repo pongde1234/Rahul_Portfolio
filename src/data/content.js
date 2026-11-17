@@ -17,10 +17,10 @@ export const profile = {
   nameHint: '**rah** + c**ool**',
   headline: ['I design', 'products that', 'people trust', '& love to use.'],
   tags: ['SaaS', 'IoT', 'Enterprise'],
-  // Split-flap board: 2 rows max 15 characters each, use "|" to break the line.
+  // Split-flap board: 2 rows max 16 characters each, use "|" to break the line.
   flapPhrases: ['DESIGNING|CLEAR PRODUCTS', 'SIMPLIFYING|COMPLEX FLOWS', 'TESTING WITH|REAL USERS', 'FROM RESEARCH|TO HANDOFF'],
   // What the board spells in the opening intro (the card sits in the middle of the screen before the site opens), then the phrases above follow.
-  flapIntro: 'RAHUL|DESIGNER',
+  flapIntro: 'RAHUL PONGDE|PRODUCT DESIGNER',
   photo: '', // e.g. '/me.jpg' (put the file in /public). Empty = "Photo coming soon" placeholder
   photoCaption: 'Rahul',
   email: 'pongderahul@gmail.com',
