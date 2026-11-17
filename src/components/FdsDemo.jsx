@@ -238,6 +238,15 @@ export default function FdsDemo() {
     }, 900)
   }
 
+  // The stand-alone copy ("Try the flow") plays the first question by itself, so the two panes are never empty and a visitor sees the idea
+  // before touching anything. The copy under the case study's timeline does not: its first stage is "nothing asked yet".
+  useEffect(() => {
+    if (!solo) return undefined
+    const t = setTimeout(() => ask(ORDER[0]), 700)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solo])
+
   // tell the case study's timeline which stage this is
   useEffect(() => {
     if (!solo && window.parent !== window) window.parent.postMessage({ type: 'proto:step', step: stage }, window.location.origin)
@@ -264,28 +273,29 @@ export default function FdsDemo() {
 
   return (
     <div className="fdsd">
-      <Glow block on={stage === 'ask' || stage === 'draw'}>
-        <div style={{ width: '100%' }}>
-          <ChipGroup label={`Ask ${AI_NAME}`} selectionType="single" value={asked ?? ''} onChange={({ values }) => values[0] && ask(values[0])}>
-            {ORDER.map((id) => (
-              <Chip key={id} value={id}>{ANSWERS[id].label}</Chip>
-            ))}
-          </ChipGroup>
-        </div>
-      </Glow>
+      {/* the hint dot sits on the next question to try (the first one before anything is asked), and there is no second pointer: the visitor already has a cursor */}
+      <ChipGroup label={`Ask ${AI_NAME}`} size="Medium" selectionType="single" value={asked ?? ''} onChange={({ values }) => values[0] && ask(values[0])}>
+        {ORDER.map((id, i) => (
+          <Glow key={id} pointer={false} on={(stage === 'ask' || stage === 'draw') && id === ORDER[asked ? (ORDER.indexOf(asked) + 1) % ORDER.length : 0]}>
+            <Chip value={id}>{ANSWERS[id].label}</Chip>
+          </Glow>
+        ))}
+      </ChipGroup>
 
       <div className="fdsd__panes">
         <section className="fdsd__pane" aria-label={`What ${AI_NAME} writes`}>
-          <div className="BodySmallSemibold fdsd__label">{AI_NAME} writes this</div>
-          {asked ? (
-            <pre className="CodeSmallRegular fdsd__code" tabIndex={0} aria-label={`The JSON that ${AI_NAME} wrote`}>{JSON.stringify(ANSWERS[asked].nodes, null, 2)}</pre>
-          ) : (
-            <p className="BodyMediumRegular fdsd__empty">Pick a question. {AI_NAME} answers by writing the screen as JSON.</p>
-          )}
+          <div className="BodyMediumSemibold fdsd__label">1 · {AI_NAME} writes the screen as JSON</div>
+          <div className="fdsd__codewrap">
+            {asked ? (
+              <pre className="CodeSmallRegular fdsd__code" tabIndex={0} aria-label={`The JSON that ${AI_NAME} wrote`}>{JSON.stringify(ANSWERS[asked].nodes, null, 2)}</pre>
+            ) : (
+              <p className="BodyMediumRegular fdsd__empty">Pick a question. {AI_NAME} answers by writing the screen as JSON.</p>
+            )}
+          </div>
         </section>
 
         <section className="fdsd__pane" aria-label="What the design system draws">
-          <div className="BodySmallSemibold fdsd__label">The design system draws this</div>
+          <div className="BodyMediumSemibold fdsd__label">2 · The design system draws it</div>
           <div className="fdsd__screen" aria-live="polite" aria-busy={busy}>
             {stage === 'done' && (
               <Alert

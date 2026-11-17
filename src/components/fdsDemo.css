@@ -10,25 +10,44 @@
   text-align: left;
 }
 
-/* the AI writes first, the design system draws below it: stacked, so the drawn screen gets the full width */
+/* what the AI writes sits beside what the design system draws from it, so cause and effect are seen together; on a narrow frame they stack */
 .fdsd__panes {
   display: grid;
   gap: var(--spacing-24);
   grid-template-columns: minmax(0, 1fr);
 }
 
-@media (max-width: 760px) {
+@media (min-width: 760px) {
+  .fdsd__panes {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 759px) {
   .fdsd { padding: var(--spacing-16); }
 }
 
 .fdsd__pane {
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: var(--spacing-12);
   min-width: 0;
 }
 
 .fdsd__label {
-  color: var(--text-neutral-subtle);
+  color: var(--text-neutral-normal);
+}
+
+/* the JSON's box takes the height of the drawn screen beside it and scrolls inside */
+.fdsd__codewrap {
+  position: relative;
+  min-width: 0;
+}
+
+@media (min-width: 760px) {
+  .fdsd__codewrap { min-height: calc(var(--spacing-64) * 5); }
+  .fdsd__codewrap .fdsd__code { position: absolute; inset: 0; max-height: none; }
 }
 
 /* the JSON the AI writes */
