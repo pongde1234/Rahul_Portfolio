@@ -292,6 +292,23 @@ export const projects = [
         sub: 'In short',
         body: 'A slow task became a few simple steps. Clients like ==JSW and Tata== no longer add hundreds of devices by hand.',
       },
+
+      // ---------- 10 What's next ----------
+      { type: 'heading', heading: 'Future developments' },
+      { type: 'opener', body: 'Today the upload takes ==an Excel sheet==. Next, it could take ==other kinds of files== too.' },
+      {
+        type: 'rows',
+        sub: 'Ideas for what comes next',
+        items: [
+          { label: 'CSV files', text: 'Add devices from a CSV file', note: 'The same preview and the same fixing steps as the Excel sheet' },
+          { label: 'Other files', text: 'Accept the formats clients already have', note: 'For example a Google Sheet, or a list exported from another system' },
+        ],
+      },
+      {
+        type: 'callout',
+        sub: 'The idea',
+        body: 'Whatever file a client already has should be enough, with ==the same checks before anything is saved==.',
+      },
       { type: 'links', items: [{ label: 'View the Figma file ↗', url: 'https://www.figma.com/design/O95C2MQm0skIxj050ML3WL/Portfolio?node-id=0-1' }] },
         ],
   },
@@ -534,7 +551,7 @@ export const projects = [
     prototype: {
       demo: 'fds',
       viewW: 960,
-      viewH: 780,
+      viewH: 620, // the side-by-side layout is about 510px tall, 605px at the "Done!" stage with its extra note
       heading: 'Bruce prototype',
       blurb: 'Ask a question: Bruce writes the screen as JSON, and the design system draws it.',
       title: 'Interactive prototype: Bruce writes a screen as JSON and the design system draws it. A glowing pointer shows what to click next; the steps under it can also be clicked.',

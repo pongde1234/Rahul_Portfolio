@@ -246,7 +246,7 @@ BulkUploadFlow.native = true
 BulkUploadFlow.bare = true
 
 function FdsDemoFlow() {
-  return <EmbedFrame demo="fds" viewW={960} viewH={780} title="Interactive demo: Bruce writes a screen and the design system draws it" />
+  return <EmbedFrame demo="fds" viewW={960} viewH={560} title="Interactive demo: Bruce writes a screen and the design system draws it" />
 }
 FdsDemoFlow.native = true
 FdsDemoFlow.bare = true
