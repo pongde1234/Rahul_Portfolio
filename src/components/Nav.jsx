@@ -15,7 +15,7 @@ function Pill({ id, hover, on, label, spring }) {
     <>
       {hover === id && <motion.span layoutId="nav-hover" className="nav__bg nav__bg--hover" transition={spring} />}
       {on && <motion.span layoutId="nav-active" className="nav__bg nav__bg--active" transition={spring} />}
-      <span className="nav__label">{label}</span>
+      <span className={`nav__label${on ? ' nav__label--on' : ''}`}>{label}</span>
     </>
   )
 }

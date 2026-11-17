@@ -63,7 +63,9 @@ h1, h2, h3 { font-optical-sizing: auto; }
 }
 .nav__link { padding: 9px 14px; border-radius: 8px; text-decoration: none; transition: background 0.2s, color 0.2s; }
 .nav__link { position: relative; }
-.nav__link.active { color: var(--text-static-white-normal); }
+/* the label turns white only while the dark highlight is under it (not when the router marks the link "active": on the home page's Work and About slides the
+   router still marks Home active, which left Home white on white and About dark on dark) */
+.nav__label--on { color: var(--text-static-white-normal); }
 .nav__resume { margin-left: 3px; position: relative; }
 .nav__resume::before { content: ''; position: absolute; left: -3px; top: 25%; height: 50%; width: 1px; background: var(--line); }
 .nav__drop { position: relative; }
@@ -1682,7 +1684,7 @@ html.custom-cursor button.receipt__corner:not(:disabled):active { cursor: grabbi
 /* layers, bottom to top: the pale hover highlight, the dark current-page highlight, then the labels, so the hover one can never cover the dark one */
 .nav__bg--hover { background: var(--background-neutral-faded); z-index: 0; }
 .nav__bg--active { background: var(--ink); z-index: 1; }
-.nav__label { position: relative; z-index: 2; }
+.nav__label { position: relative; z-index: 2; transition: color 0.2s; }
 .nav__resume:hover { background: none; }
 
 /* the case-study tabs: the dark highlight slides between them */
